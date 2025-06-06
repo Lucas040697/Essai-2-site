@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur de Protocoles Sensoriels</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: An interactive dashboard-style single-page application. A persistent left-hand navigation sidebar allows users to select one of the 6 main sections of the protocol. The main content area dynamically displays the details of the selected section. This structure breaks down the dense report into manageable, task-oriented chunks, facilitating non-linear exploration and learning. This design prioritizes user understanding and ease of reference. -->
+    <!-- Visualization & Content Choices: 
+        - General Structure: Content is organized into expandable accordion cards for each of the 20 points, allowing users to fill in data. Goal: Organize & Collect Data. Method: HTML/CSS/JS.
+        - PDF Export: A core feature to generate a document from the user-entered data. Goal: Output. Method: jsPDF library.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f7f4; 
+            color: #2d3748;
+        }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            font-weight: 500;
+            color: #4a5568;
+        }
+        .nav-link:hover {
+            background-color: #e2e8f0;
+        }
+        .nav-link.active {
+            background-color: #a78bfa; /* Soft Violet */
+            color: #ffffff;
+            font-weight: 600;
+        }
+        .nav-link .icon {
+            margin-right: 0.75rem;
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+        .accordion-header {
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            transition: background-color 0.2s;
+        }
+        .accordion-header:hover {
+            background-color: #fafafa;
+        }
+        .accordion-content {
+            display: none;
+            padding: 1.5rem;
+            border: 1px solid #e2e8f0;
+            border-top: none;
+            border-radius: 0 0 0.5rem 0.5rem;
+            background-color: #ffffff;
+        }
+        .accordion-content.open {
+            display: block;
+        }
+        .accordion-arrow {
+            transition: transform 0.3s;
+        }
+        .accordion-header.open .accordion-arrow {
+            transform: rotate(180deg);
+        }
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .form-input:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #a78bfa;
+            box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.4);
+        }
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 1.5rem;
+            z-index: 9999;
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div id="loading-overlay" style="display: none;">Exportation en cours...</div>
+    <div class="flex h-screen bg-gray-100">
+        <aside class="w-72 bg-white shadow-md flex-shrink-0 flex flex-col">
+            <div class="p-4">
+                <h1 class="text-xl font-bold text-violet-700">Générateur de Protocole</h1>
+                <p class="text-sm text-gray-500">Outil de rédaction</p>
+            </div>
+            <nav id="main-nav" class="p-4 space-y-2 flex-1 overflow-y-auto">
+            </nav>
+            <div class="p-4 border-t border-gray-200">
+                <button id="export-pdf-button" class="w-full flex items-center justify-center gap-2 bg-violet-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-violet-700 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                    Exporter en PDF
+                </button>
+            </div>
+        </aside>
+
+        <main id="main-content" class="flex-1 overflow-y-auto p-4 md:p-8">
+            <div id="content-container">
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let formData = {};
+
+        const protocolData = {
+            sections: [
+                 {
+                    id: 'introduction',
+                    title: 'Introduction',
+                    icon: `<svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`,
+                    content: `
+                        <div class="bg-white p-6 rounded-lg shadow-sm">
+                           <h2 class="text-2xl font-bold mb-4 text-violet-700">Bienvenue dans le Générateur de Protocoles Sensoriels</h2>
+                            <p class="mb-4">Cet outil est conçu pour vous aider à rédiger des protocoles de tests sensoriels complets et standardisés. Remplissez les champs dans chaque section pour construire votre protocole pas à pas. Vous pouvez ouvrir et fermer les sections en cliquant sur leur titre.</p>
+                             <div class="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
+                                <h3 class="font-semibold text-green-800">Exportation PDF</h3>
+                                <p class="text-sm text-green-700 mt-2">Une fois que vous avez rempli toutes les sections, cliquez sur le bouton "Exporter en PDF" dans le menu de gauche pour générer un document professionnel de votre protocole.</p>
+                            </div>
+                        </div>
+                    `
+                },
+                {
+                    id: 'identification',
+                    title: '1. Identification & Contexte',
+                    icon: `<svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002-2h2a2 2 0 002 2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>`,
+                    items: [
+                        { inputId: 'titre', title: '1. Titre du Protocole', explanation: 'Le titre est la première porte d\'entrée du document. Il doit être concis, tout en étant suffisamment clair et informatif pour permettre une identification rapide de l\'objet principal du test sensoriel. Un bon titre facilite l\'organisation des études, leur archivage et leur recherche ultérieure.', example: 'Protocole de Test Sensoriel – Évaluation Hédonique Comparative de Trois Nouvelles Formulations de Boisson Énergisante', type: 'text' },
+                        { inputId: 'identifiant', title: '2. Identifiant Unique', explanation: 'L\'attribution d\'un code unique à chaque protocole est une pratique indispensable pour assurer une traçabilité sans faille. Cet identifiant sert de lien entre le protocole, le rapport d\'analyse, les échantillons testés, les données brutes collectées et tout autre document relatif à l\'étude. Il prévient toute confusion.', example: 'AS-PROT-2024-06-BE-005', type: 'text' },
+                        { inputId: 'version', title: '3. Version et Date', explanation: 'Les protocoles peuvent évoluer. Indiquer un numéro de version clair (ex: 1.0, 1.1) et la date de la dernière mise à jour est essentiel pour s\'assurer que la dernière version approuvée est utilisée et pour tracer l\'historique des modifications.', example: 'Version 1.1 – 15/07/2024 (Modification de la section 9.3)', type: 'text' },
+                        { inputId: 'responsable', title: '4. Responsable de l\'Étude', explanation: 'Il est crucial d\'identifier nommément la personne qui porte la responsabilité principale de l\'étude (conception, supervision, analyse, rapport). Cette identification clarifie les rôles et les responsabilités.', example: 'Dr. Léa Martin (PhD, Responsable du Laboratoire d\'Analyse Sensorielle)', type: 'text' },
+                        { inputId: 'contexte', title: '5. Contexte et Justification', explanation: 'Cette section doit expliquer de manière concise mais claire les raisons pour lesquelles le test sensoriel est entrepris. Quel est le problème spécifique que l\'on cherche à résoudre? Quelle est la question précise à laquelle l\'étude doit apporter une réponse?', example: 'Assurer que la réduction de 15% de sucre dans notre gamme de céréales n\'entraîne pas une baisse significative de l\'appréciation globale du produit par les enfants, notre cible principale.', type: 'textarea' },
+                        { inputId: 'objectifs', title: '6. Objectifs Spécifiques', explanation: 'Les objectifs spécifiques décrivent de manière précise et mesurable ce que l\'on cherche à déterminer grâce au test. Ils découlent directement du contexte et sont déterminants pour le choix de la méthodologie.', example: 'Déterminer s\'il existe une différence sensorielle globale perceptible par les consommateurs entre la formulation actuelle de la sauce tomate (Produit A) et une nouvelle formulation avec un taux de sel réduit de 20% (Produit B).', type: 'textarea' }
+                    ]
+                },
+                 {
+                    id: 'methodologie',
+                    title: '2. Méthodologie',
+                    icon: `<svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>`,
+                    items: [
+                        { inputId: 'testType', title: '7. Type de Test Sensoriel', explanation: 'Indiquer clairement le type de test (Discriminatif, Descriptif, Affectif) et justifier ce choix en expliquant son adéquation avec les objectifs spécifiques. Chaque catégorie de test est conçue pour répondre à des questions distinctes.', example: 'Un test de comparaison par paires (discriminatif) a été choisi car l\'objectif est de déterminer lequel des deux prototypes de parfum est préféré par les consommateurs.', type: 'text' },
+                        { inputId: 'produits', title: '8. Description du/des Produit(s)', explanation: 'Fournir une description exhaustive de chaque produit pour une traçabilité parfaite (marque, nom, lot, DDM, conditions de stockage).', example: 'Produit A (Référence): Biscuit \'Croq\'Choc\', Lot N° BC20240512A, DDM: 12/11/2024, stocké à 20°C.', type: 'textarea' },
+                        { inputId: 'preparation', title: '9. Préparation et Présentation des Échantillons', explanation: 'Détailler toutes les étapes de préparation (température, quantité, récipient) et de présentation (codage aléatoire à 3 chiffres, ordre contrebalancé) pour assurer l\'homogénéité et neutraliser les biais.', example: '100mL de soupe servis à 65°C dans des bols en céramique blanche codés avec des nombres aléatoires. L\'ordre de présentation est contrebalancé selon un plan en carré latin.', type: 'textarea' }
+                    ]
+                },
+                {
+                    id: 'panel',
+                    title: '3. Panel de Dégustateurs',
+                    icon: `<svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>`,
+                    items: [
+                        { inputId: 'panelType', title: '10.1 Type de Panel', explanation: 'Décrire le type de panel (experts, entraînés, consommateurs) en lien avec les objectifs. Un panel d\'experts pour la finesse descriptive, un panel de consommateurs pour l\'appréciation.', example: 'Panel de 150 consommateurs réguliers de sodas pour un test de préférence.', type: 'text' },
+                        { inputId: 'recrutement', title: '10.2 Critères de Recrutement', explanation: 'Lister les critères de sélection (démographiques, habitudes de consommation, absence d\'allergies). Un recrutement rigoureux est une condition de base pour la validité des résultats.', example: 'Femmes/Hommes, 30-55 ans, consommant des yaourts aux fruits >= 2 fois/semaine, non allergiques au lait.', type: 'textarea' },
+                        { inputId: 'panelSize', title: '10.3 Nombre de Sujets', explanation: 'Indiquer et justifier la taille du panel. Elle dépend du type de test, de la variabilité attendue et de la puissance statistique souhaitée.', example: '100 consommateurs pour une puissance de 80% afin de détecter une différence de 0.8 point sur une échelle hédonique à 9 points.', type: 'text' },
+                        { inputId: 'formation', title: '10.4 Formation (si applicable)', explanation: 'Pour les panels entraînés, décrire le programme de formation (durée, méthodes, calibration sur les échelles et descripteurs).', example: 'Formation de 60h sur la texture des produits de panification, avec définition de références pour l\'intensité.', type: 'textarea' },
+                        { inputId: 'consignes', title: '10.5 Consignes Avant le Test', explanation: 'Lister les instructions données aux sujets avant la séance (ne pas fumer, ne pas consommer de café/parfum) pour minimiser les interférences sensorielles.', example: 'Ne pas fumer 2h avant la séance, ne pas utiliser de parfum le jour du test, venir à jeun depuis au moins 1h.', type: 'textarea' }
+                    ]
+                },
+                {
+                    id: 'environnement',
+                    title: '4. Environnement & Déroulement',
+                    icon: `<svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>`,
+                    items: [
+                        { inputId: 'conditions', title: '11. Conditions de Test', explanation: 'Décrire le local de test (idéalement conforme ISO 8589), le contrôle de l\'environnement (absence d\'odeurs/bruits, température et lumière contrôlées) et le matériel fourni (verres, crachoirs, eau neutre).', example: 'Cabines de dégustation individuelles, éclairage lumière du jour contrôlé, température de 21°C. Ventilation avec filtre à charbon actif.', type: 'textarea' },
+                        { inputId: 'deroulement', title: '12. Déroulement de la Séance', explanation: 'Rédiger les instructions claires et standardisées données aux sujets, et décrire la fiche d\'évaluation (papier ou digitale) utilisée pour la collecte des réponses.', example: 'Instructions pour un test triangulaire lues au début de la séance, puis réponses collectées sur tablette via le logiciel FIZZ.', type: 'textarea' }
+                    ]
+                },
+                {
+                    id: 'analyse',
+                    title: '5. Évaluation & Analyse',
+                    icon: `<svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>`,
+                    items: [
+                        { inputId: 'echelles', title: '13. Descripteurs et Échelles de Mesure', explanation: 'Lister les attributs à évaluer et le type d\'échelle de mesure utilisée (ex: échelle hédonique à 9 points, échelle d\'intensité linéaire, échelle JAR). Le choix de l\'échelle est critique et dépend de la question posée.', example: 'Appréciation globale évaluée sur une échelle hédonique à 9 points. Intensité de l\'amertume sur une échelle linéaire de 0 à 10.', type: 'textarea' },
+                        { inputId: 'collecte', title: '14. Collecte et Enregistrement', explanation: 'Décrire comment les données sont collectées (papier, digital), enregistrées (logiciel, format) et vérifiées pour assurer leur intégrité. La traçabilité doit être parfaite.', example: 'Collecte sur tablette via FIZZ, export automatique des données en .csv, sauvegarde sur serveur sécurisé avec vérification de la cohérence.', type: 'text' },
+                        { inputId: 'statistiques', title: '15. Analyse Statistique', explanation: 'Spécifier les méthodes statistiques utilisées (ex: ANOVA, Chi-deux, ACP) en adéquation avec le type de données et les objectifs. Le seuil de significativité retenu (généralement 5%) doit être mentionné.', example: 'ANOVA sur les notes hédoniques pour tester l\'effet produit, suivie de tests post-hoc de Tukey si p < 0.05.', type: 'textarea' },
+                        { inputId: 'interpretation', title: '16. Critères d\'Interprétation des Résultats', explanation: 'Définir en amont comment les résultats seront interprétés. Une différence statistiquement significative est-elle pour autant commercialement pertinente ?', example: 'Une différence de note hédonique supérieure à 1 point sera considérée comme commercialement pertinente.', type: 'text' }
+                    ]
+                },
+                {
+                    id: 'rapport',
+                    title: '6. Rapport & Annexes',
+                    icon: `<svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>`,
+                    items: [
+                        { inputId: 'contenuRapport', title: '17. Contenu du Rapport', explanation: 'Définir la structure type du rapport final (Résumé, Intro, Méthodes, Résultats, Discussion, Conclusion) pour une communication claire et standardisée.', example: 'Rapport structuré avec un résumé exécutif d\'une page destiné aux décideurs, suivi des sections détaillées.', type: 'textarea' },
+                        { inputId: 'ethique', title: '18. Confidentialité & Éthique', explanation: 'Mentionner les dispositions pour la confidentialité des résultats, l\'anonymat et le consentement éclairé des panélistes. C\'est un gage de confiance et de professionnalisme.', example: 'Signature d\'un formulaire de consentement éclairé avant participation. Données traitées de manière anonyme.', type: 'text' },
+                        { inputId: 'references', title: '19. Références', explanation: 'Lister les normes (ISO, AFNOR) et les ouvrages scientifiques de référence utilisés pour élaborer le protocole. Cela confère légitimité et crédibilité à la démarche.', example: 'NF EN ISO 8589: Conception des locaux d\'essais. NF EN ISO 8586: Sélection et entraînement des sujets.', type: 'textarea' },
+                        { inputId: 'annexes', title: '20. Annexes', explanation: 'Lister les documents joints au protocole (modèles de fiches, questionnaires, plans détaillés) pour le rendre pleinement opérationnel et reproductible.', example: 'Annexe 1: Modèle du formulaire de consentement. Annexe 2: Modèle de la fiche d\'évaluation.', type: 'textarea' }
+                    ]
+                }
+            ]
+        };
+
+        const toggleLoading = (isLoading) => {
+            const overlay = document.getElementById('loading-overlay');
+            if (isLoading) {
+                overlay.style.display = 'flex';
+            } else {
+                overlay.style.display = 'none';
+            }
+        };
+        
+        function renderAccordions(items) {
+            return items.map(item => {
+                const savedValue = formData[item.inputId] || '';
+                const isTextarea = item.type === 'textarea';
+                const inputElement = isTextarea
+                    ? `<textarea id="${item.inputId}" class="form-textarea">${savedValue}</textarea>`
+                    : `<input type="text" id="${item.inputId}" class="form-input" value="${savedValue}">`;
+                
+                return `
+                <div class="mb-2">
+                    <div class="accordion-header bg-white rounded-lg shadow-sm">
+                        <h3 class="text-lg font-semibold">${item.title}</h3>
+                        <svg class="accordion-arrow w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="space-y-4">
+                            <div>
+                                <h4 class="font-semibold text-violet-600">Explication Pédagogique</h4>
+                                <p class="mt-1 text-gray-700">${item.explanation}</p>
+                            </div>
+                            <div class="p-3 bg-gray-50 rounded-md border border-gray-200">
+                                <h4 class="font-semibold text-gray-600">Exemple</h4>
+                                <p class="mt-1 text-sm text-gray-800 italic">"${item.example}"</p>
+                            </div>
+                            <div class="mt-4">
+                                <label for="${item.inputId}" class="font-semibold text-gray-700">Votre saisie :</label>
+                                ${inputElement}
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+        
+        function renderSection(section) {
+            const container = document.getElementById('content-container');
+            if (section.id === 'introduction') {
+                container.innerHTML = section.content;
+            } else {
+                container.innerHTML = `
+                    <h2 class="text-3xl font-bold mb-6">${section.title}</h2>
+                    <div id="accordion-container">
+                        ${renderAccordions(section.items)}
+                    </div>`;
+            }
+
+            document.querySelectorAll('.accordion-header').forEach(header => {
+                header.addEventListener('click', () => {
+                    const content = header.nextElementSibling;
+                    const isOpen = content.classList.contains('open');
+                    document.querySelectorAll('.accordion-content.open').forEach(openContent => {
+                        openContent.classList.remove('open');
+                        openContent.previousElementSibling.classList.remove('open');
+                    });
+                    if (!isOpen) {
+                        content.classList.add('open');
+                        header.classList.add('open');
+                    }
+                });
+            });
+
+            if (section.items) {
+                section.items.forEach(item => {
+                    const inputField = document.getElementById(item.inputId);
+                    if (inputField) {
+                        inputField.addEventListener('input', (event) => {
+                            formData[item.inputId] = event.target.value;
+                        });
+                    }
+                });
+            }
+        }
+        
+        function exportToPdf() {
+            if (typeof window.jspdf === 'undefined') {
+                alert("La librairie d'exportation PDF n'a pas pu être chargée. Veuillez vérifier votre connexion internet et réessayer.");
+                return;
+            }
+            const { jsPDF } = window.jspdf;
+
+            toggleLoading(true);
+            
+            setTimeout(() => {
+                try {
+                    const doc = new jsPDF({
+                        orientation: 'p',
+                        unit: 'mm',
+                        format: 'a4'
+                    });
+                    const margin = 15;
+                    const pageWidth = doc.internal.pageSize.getWidth();
+                    const pageHeight = doc.internal.pageSize.getHeight();
+                    const usableWidth = pageWidth - 2 * margin;
+                    let y = margin;
+                    
+                    const protocolTitle = document.getElementById('titre')?.value || "Protocole Sensoriel";
+                    
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(18);
+                    doc.text(protocolTitle, pageWidth / 2, y, { align: 'center' });
+                    y += 15;
+
+                    for (const section of protocolData.sections) {
+                        if (!section.items) continue;
+
+                        if (y > pageHeight - margin - 20) {
+                            doc.addPage();
+                            y = margin;
+                        }
+                        
+                        doc.setFont('helvetica', 'bold');
+                        doc.setFontSize(14);
+                        doc.setTextColor(93, 33, 187); // Violet color
+                        doc.text(section.title, margin, y);
+                        y += 8;
+
+                        for (const item of section.items) {
+                            if (y > pageHeight - margin - 15) {
+                                doc.addPage();
+                                y = margin;
+                            }
+                            doc.setFont('helvetica', 'bold');
+                            doc.setFontSize(11);
+                            doc.setTextColor(0, 0, 0);
+                            
+                            const itemTitleLines = doc.splitTextToSize(item.title, usableWidth);
+                            doc.text(itemTitleLines, margin, y);
+                            y += itemTitleLines.length * 5;
+
+                            const value = formData[item.inputId] || "Non renseigné";
+                            doc.setFont('helvetica', 'normal');
+                            doc.setFontSize(10);
+                            doc.setTextColor(75, 85, 99);
+                            
+                            const valueLines = doc.splitTextToSize(value, usableWidth);
+                             if (y + (valueLines.length * 4.5) > pageHeight - margin) {
+                                doc.addPage();
+                                y = margin;
+                            }
+                            doc.text(valueLines, margin + 5, y);
+                            y += valueLines.length * 4.5 + 5;
+                        }
+                        y += 5;
+                    }
+                    doc.save(`${protocolTitle.replace(/ /g, '_')}.pdf`);
+                } catch (error) {
+                    console.error("Erreur lors de la génération du PDF:", error);
+                    alert("Une erreur est survenue lors de la création du PDF. Veuillez consulter la console pour plus de détails.");
+                } finally {
+                    toggleLoading(false);
+                }
+            }, 50);
+        }
+
+        function buildNav() {
+            const navContainer = document.getElementById('main-nav');
+            protocolData.sections.forEach(section => {
+                const link = document.createElement('a');
+                link.className = 'nav-link';
+                link.dataset.section = section.id;
+                link.innerHTML = `${section.icon} ${section.title}`;
+                navContainer.appendChild(link);
+            });
+        }
+
+        function handleNavigation() {
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    const sectionId = link.dataset.section;
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+                    const sectionData = protocolData.sections.find(s => s.id === sectionId);
+                    
+                    const container = document.getElementById('content-container');
+                    container.style.opacity = 0;
+                    setTimeout(() => {
+                        renderSection(sectionData);
+                        container.style.opacity = 1;
+                        container.scrollTop = 0;
+                        document.querySelector('.accordion-header')?.click();
+                    }, 200);
+                });
+            });
+        }
+
+        function init() {
+            buildNav();
+            handleNavigation();
+            document.querySelector('.nav-link[data-section="introduction"]').click();
+            document.getElementById('export-pdf-button').addEventListener('click', exportToPdf);
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
