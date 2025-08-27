@@ -1,314 +1,322 @@
-!DOCTYPE html
-html lang=fr
-head
-    meta charset=UTF-8
-    meta name=viewport content=width=device-width, initial-scale=1.0
-    titleGénérateur de Protocoles Sensorielstitle
-    script src=httpscdn.tailwindcss.comscript
-    script src=httpscdnjs.cloudflare.comajaxlibsjspdf2.5.1jspdf.umd.min.jsscript
-    link rel=preconnect href=httpsfonts.googleapis.com
-    link rel=preconnect href=httpsfonts.gstatic.com crossorigin
-    link href=httpsfonts.googleapis.comcss2family=Interwght@400;500;600;700&display=swap rel=stylesheet
-    !-- Chosen Palette Warm Neutrals --
-    !-- Application Structure Plan An interactive dashboard-style single-page application. A persistent left-hand navigation sidebar allows users to select one of the 6 main sections of the protocol. The main content area dynamically displays the details of the selected section. This structure breaks down the dense report into manageable, task-oriented chunks, facilitating non-linear exploration and learning. This design prioritizes user understanding and ease of reference. --
-    !-- Visualization & Content Choices 
-        - General Structure Content is organized into expandable accordion cards for each of the 20 points, allowing users to fill in data. Goal Organize & Collect Data. Method HTMLCSSJS.
-        - PDF Export A core feature to generate a document from the user-entered data. Goal Output. Method jsPDF library.
-        - Interactive Generators Buttons for generating random codes and Latin SquaresBIBD to assist in protocol creation. Goal Automate & Assist. Method JS DOM manipulation.
-    --
-    !-- CONFIRMATION NO SVG graphics used. NO Mermaid JS used. --
-    style
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur de Protocoles Sensoriels</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: An interactive dashboard-style single-page application. A persistent left-hand navigation sidebar allows users to select one of the 6 main sections of the protocol. The main content area dynamically displays the details of the selected section. This structure breaks down the dense report into manageable, task-oriented chunks, facilitating non-linear exploration and learning. This design prioritizes user understanding and ease of reference. -->
+    <!-- Visualization & Content Choices: 
+        - General Structure: Content is organized into expandable accordion cards for each of the 20 points, allowing users to fill in data. Goal: Organize & Collect Data. Method: HTML/CSS/JS.
+        - PDF Export: A core feature to generate a document from the user-entered data. Goal: Output. Method: jsPDF library.
+        - Interactive Generators: Buttons for generating random codes and Latin Squares/BIBD to assist in protocol creation. Goal: Automate & Assist. Method: JS DOM manipulation.
+        - Decision Tree: An interactive guide for selecting the correct sensory test type. Goal: Guide & Educate. Method: JS DOM manipulation.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
         body {
-            font-family 'Inter', sans-serif;
-            background-color #f8f7f4; 
-            color #2d3748;
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f7f4; 
+            color: #2d3748;
         }
         .nav-link {
-            display flex;
-            align-items center;
-            padding 0.75rem 1rem;
-            border-radius 0.5rem;
-            transition all 0.2s ease-in-out;
-            cursor pointer;
-            font-weight 500;
-            color #4a5568;
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            font-weight: 500;
+            color: #4a5568;
         }
-        .nav-linkhover {
-            background-color #e2e8f0;
+        .nav-link:hover {
+            background-color: #e2e8f0;
         }
         .nav-link.active {
-            background-color #a78bfa;  Soft Violet 
-            color #ffffff;
-            font-weight 600;
+            background-color: #a78bfa; /* Soft Violet */
+            color: #ffffff;
+            font-weight: 600;
         }
         .nav-link .icon {
-            margin-right 0.75rem;
-            width 1.25rem;
-            height 1.25rem;
+            margin-right: 0.75rem;
+            width: 1.25rem;
+            height: 1.25rem;
         }
         .accordion-header {
-            cursor pointer;
-            display flex;
-            justify-content space-between;
-            align-items center;
-            padding 1rem 1.5rem;
-            background-color #ffffff;
-            border 1px solid #e2e8f0;
-            border-radius 0.5rem;
-            transition background-color 0.2s;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            transition: background-color 0.2s;
         }
-        .accordion-headerhover {
-            background-color #fafafa;
+        .accordion-header:hover {
+            background-color: #fafafa;
         }
         .accordion-content {
-            display none;
-            padding 1.5rem;
-            border 1px solid #e2e8f0;
-            border-top none;
-            border-radius 0 0 0.5rem 0.5rem;
-            background-color #ffffff;
+            display: none;
+            padding: 1.5rem;
+            border: 1px solid #e2e8f0;
+            border-top: none;
+            border-radius: 0 0 0.5rem 0.5rem;
+            background-color: #ffffff;
         }
         .accordion-content.open {
-            display block;
+            display: block;
         }
         .accordion-arrow {
-            transition transform 0.3s;
+            transition: transform 0.3s;
         }
         .accordion-header.open .accordion-arrow {
-            transform rotate(180deg);
+            transform: rotate(180deg);
         }
         .form-input, .form-textarea, .form-select {
-            width 100%;
-            padding 0.5rem 0.75rem;
-            border 1px solid #d1d5db;
-            border-radius 0.375rem;
-            transition border-color 0.2s, box-shadow 0.2s;
-            background-color #fff;
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background-color: #fff;
         }
-        .form-inputfocus, .form-textareafocus, .form-selectfocus {
-            outline none;
-            border-color #a78bfa;
-            box-shadow 0 0 0 2px rgba(167, 139, 250, 0.4);
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            outline: none;
+            border-color: #a78bfa;
+            box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.4);
         }
         .form-textarea {
-            min-height 120px;
-            resize vertical;
+            min-height: 120px;
+            resize: vertical;
         }
         #loading-overlay {
-            position fixed;
-            top 0;
-            left 0;
-            width 100%;
-            height 100%;
-            background-color rgba(0, 0, 0, 0.5);
-            display flex;
-            justify-content center;
-            align-items center;
-            color white;
-            font-size 1.5rem;
-            z-index 9999;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 1.5rem;
+            z-index: 9999;
         }
         .generator-button {
-             background-color #8b5cf6;
-             color white;
-             font-weight 500;
-             padding 0.5rem 1rem;
-             border-radius 0.375rem;
-             transition background-color 0.2s;
+             background-color: #8b5cf6;
+             color: white;
+             font-weight: 500;
+             padding: 0.5rem 1rem;
+             border-radius: 0.375rem;
+             transition: background-color 0.2s;
         }
-        .generator-buttonhover {
-             background-color #7c3aed;
+        .generator-button:hover {
+             background-color: #7c3aed;
         }
-    style
-head
-body class=antialiased
-    div id=loading-overlay style=display none;Opération en cours...div
+        .tree-node {
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            background-color: white;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+        .tree-node:hover {
+            border-color: #a78bfa;
+            background-color: #f5f3ff;
+        }
+        .tree-node.selected {
+            border-color: #8b5cf6;
+            background-color: #ede9fe;
+            font-weight: 600;
+            color: #5b21b6;
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div id="loading-overlay" style="display: none;">Opération en cours...</div>
 
-    div class=flex h-screen bg-gray-100
-        aside class=w-72 bg-white shadow-md flex-shrink-0 flex flex-col
-            div class=p-4
-                h1 class=text-xl font-bold text-violet-700Générateur de Protocoleh1
-                p class=text-sm text-gray-500Outil de rédactionp
-            div
-            nav id=main-nav class=p-4 space-y-2 flex-1 overflow-y-auto
-            nav
-            div class=p-4 border-t border-gray-200
-                button id=export-pdf-button class=w-full flex items-center justify-center gap-2 bg-violet-600 text-white font-bold py-2 px-4 rounded-lg hoverbg-violet-700 transition-colors
-                    svg xmlns=httpwww.w3.org2000svg class=h-5 w-5 viewBox=0 0 20 20 fill=currentColorpath fill-rule=evenodd d=M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z clip-rule=evenodd svg
+    <div class="flex h-screen bg-gray-100">
+        <aside class="w-72 bg-white shadow-md flex-shrink-0 flex flex-col">
+            <div class="p-4">
+                <h1 class="text-xl font-bold text-violet-700">Générateur de Protocole</h1>
+                <p class="text-sm text-gray-500">Outil de rédaction</p>
+            </div>
+            <nav id="main-nav" class="p-4 space-y-2 flex-1 overflow-y-auto">
+            </nav>
+            <div class="p-4 border-t border-gray-200">
+                <button id="export-pdf-button" class="w-full flex items-center justify-center gap-2 bg-violet-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-violet-700 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
                     Exporter en PDF
-                button
-            div
-        aside
+                </button>
+            </div>
+        </aside>
 
-        main id=main-content class=flex-1 overflow-y-auto p-4 mdp-8
-            div id=content-container
-            div
-        main
-    div
+        <main id="main-content" class="flex-1 overflow-y-auto p-4 md:p-8">
+            <div id="content-container">
+            </div>
+        </main>
+    </div>
 
-    script
-        let formData = { 'nombreProduits' 1, 'panelSize' 1, 'produitsParSujet' 1 };
+    <script>
+        let formData = { 'nombreProduits': 1, 'panelSize': 1, 'produitsParSujet': 1 };
 
         const protocolData = {
-            sections [
+            sections: [
                  {
-                    id 'introduction',
-                    title 'Introduction',
-                    icon `svg class=icon fill=none stroke=currentColor viewBox=0 0 24 24 xmlns=httpwww.w3.org2000svgpath stroke-linecap=round stroke-linejoin=round stroke-width=2 d=M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0zpathsvg`,
-                    content `
-                        div class=bg-white p-6 rounded-lg shadow-sm
-                           h2 class=text-2xl font-bold mb-4 text-violet-700Bienvenue dans le Générateur de Protocoles Sensorielsh2
-                            p class=mb-4Cet outil est conçu pour vous aider à rédiger des protocoles de tests sensoriels complets et standardisés. Remplissez les champs dans chaque section pour construire votre protocole pas à pas.p
-                             div class=mt-4 p-4 bg-green-50 rounded-lg border border-green-200
-                                h3 class=font-semibold text-green-800Exportation PDFh3
-                                p class=text-sm text-green-700 mt-2Une fois que vous avez rempli toutes les sections, cliquez sur le bouton Exporter en PDF dans le menu de gauche pour générer un document professionnel de votre protocole.p
-                            div
-                        div
+                    id: 'introduction',
+                    title: 'Introduction',
+                    icon: `<svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`,
+                    content: `
+                        <div class="bg-white p-6 rounded-lg shadow-sm">
+                           <h2 class="text-2xl font-bold mb-4 text-violet-700">Bienvenue dans le Générateur de Protocoles Sensoriels</h2>
+                            <p class="mb-4">Cet outil est conçu pour vous aider à rédiger des protocoles de tests sensoriels complets et standardisés. Remplissez les champs dans chaque section pour construire votre protocole pas à pas.</p>
+                             <div class="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
+                                <h3 class="font-semibold text-green-800">Exportation PDF</h3>
+                                <p class="text-sm text-green-700 mt-2">Une fois que vous avez rempli toutes les sections, cliquez sur le bouton "Exporter en PDF" dans le menu de gauche pour générer un document professionnel de votre protocole.</p>
+                            </div>
+                        </div>
                     `
                 },
                 {
-                    id 'identification',
-                    title '1. Identification & Contexte',
-                    icon `svg class=icon fill=none stroke=currentColor viewBox=0 0 24 24 xmlns=httpwww.w3.org2000svgpath stroke-linecap=round stroke-linejoin=round stroke-width=2 d=M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002-2h2a2 2 0 002 2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01pathsvg`,
-                    items [
-                        { inputId 'titre', title '1. Titre du Protocole', explanation 'Le titre est la première porte d'entrée du document. Il doit être concis, tout en étant suffisamment clair et informatif pour permettre une identification rapide de l'objet principal du test sensoriel.', example 'Protocole de Test Sensoriel – Évaluation Hédonique Comparative de Trois Nouvelles Formulations de Boisson Énergisante', type 'text' },
-                        { inputId 'identifiant', title '2. Identifiant Unique', explanation 'L'attribution d'un code unique à chaque protocole est une pratique indispensable pour assurer une traçabilité sans faille.', example 'AS-PROT-2024-06-BE-005', type 'text' },
-                        { inputId 'version', title '3. Version et Date', explanation 'Les protocoles peuvent évoluer. Indiquer un numéro de version clair (ex 1.0, 1.1) et la date de la dernière mise à jour est essentiel pour s'assurer que la dernière version approuvée est utilisée.', example 'Version 1.1 – 15072024', type 'text' },
-                        { inputId 'responsable', title '4. Responsable de l'Étude', explanation 'Il est crucial d'identifier nommément la personne qui porte la responsabilité principale de l'étude.', example 'Dr. Léa Martin (PhD, Responsable du Laboratoire d'Analyse Sensorielle)', type 'text' },
-                        { inputId 'contexte', title '5. Contexte et Justification', explanation 'Cette section doit expliquer de manière concise mais claire les raisons pour lesquelles le test sensoriel est entrepris.', example 'Assurer que la réduction de 15% de sucre dans notre gamme de céréales n'entraîne pas une baisse significative de l'appréciation globale du produit par les enfants, notre cible principale.', type 'textarea' },
-                        { inputId 'objectifs', title '6. Objectifs Spécifiques', explanation 'Les objectifs décrivent de manière précise ce que le test doit déterminer.', example 'Déterminer s'il existe une différence sensorielle globale perceptible par les consommateurs entre la formulation actuelle (A) et une nouvelle (B).', type 'textarea' }
+                    id: 'identification',
+                    title: '1. Identification & Contexte',
+                    icon: `<svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002-2h2a2 2 0 002 2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>`,
+                    items: [
+                        { inputId: 'titre', title: '1. Titre du Protocole', explanation: 'Le titre est la première porte d\'entrée du document. Il doit être concis, tout en étant suffisamment clair et informatif pour permettre une identification rapide de l\'objet principal du test sensoriel.', example: 'Protocole de Test Sensoriel – Évaluation Hédonique Comparative de Trois Nouvelles Formulations de Boisson Énergisante', type: 'text' },
+                        { inputId: 'identifiant', title: '2. Identifiant Unique', explanation: 'L\'attribution d\'un code unique à chaque protocole est une pratique indispensable pour assurer une traçabilité sans faille.', example: 'AS-PROT-2024-06-BE-005', type: 'text' },
+                        { inputId: 'version', title: '3. Version et Date', explanation: 'Les protocoles peuvent évoluer. Indiquer un numéro de version clair (ex: 1.0, 1.1) et la date de la dernière mise à jour est essentiel pour s\'assurer que la dernière version approuvée est utilisée.', example: 'Version 1.1 – 15/07/2024', type: 'text' },
+                        { inputId: 'responsable', title: '4. Responsable de l\'Étude', explanation: 'Il est crucial d\'identifier nommément la personne qui porte la responsabilité principale de l\'étude.', example: 'Dr. Léa Martin (PhD, Responsable du Laboratoire d\'Analyse Sensorielle)', type: 'text' },
+                        { inputId: 'contexte', title: '5. Contexte et Justification', explanation: 'Cette section doit expliquer de manière concise mais claire les raisons pour lesquelles le test sensoriel est entrepris.', example: 'Assurer que la réduction de 15% de sucre dans notre gamme de céréales n\'entraîne pas une baisse significative de l\'appréciation globale du produit par les enfants, notre cible principale.', type: 'textarea' },
+                        { inputId: 'objectifs', title: '6. Objectifs Spécifiques', explanation: 'Les objectifs décrivent de manière précise ce que le test doit déterminer.', example: 'Déterminer s\'il existe une différence sensorielle globale perceptible par les consommateurs entre la formulation actuelle (A) et une nouvelle (B).', type: 'textarea' }
                     ]
                 },
                  {
-                    id 'methodologie',
-                    title '2. Méthodologie',
-                    icon `svg class=icon fill=none stroke=currentColor viewBox=0 0 24 24 xmlns=httpwww.w3.org2000svgpath stroke-linecap=round stroke-linejoin=round stroke-width=2 d=M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4zpathsvg`,
-                    items [
+                    id: 'methodologie',
+                    title: '2. Méthodologie',
+                    icon: `<svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>`,
+                    items: [
                         { 
-                            inputId 'testType', 
-                            title '7. Type de Test Sensoriel', 
-                            explanation 'Sélectionnez le type de test le plus adapté à vos objectifs. Survolez chaque option pour une explication.', 
-                            example 'Test Affectif  Échelle Hédonique', 
-                            type 'select-tooltip',
-                            options [
-                                { group 'Tests Discriminatifs', value 'Test Triangulaire', description 'Identifier l'échantillon différent parmi trois (deux sont identiques). Idéal pour le contrôle qualité ou valider un changement de process.' },
-                                { group 'Tests Discriminatifs', value 'Test Duo-Trio', description 'Identifier lequel de deux échantillons est identique à une référence. Utile pour vérifier la conformité à un standard.' },
-                                { group 'Tests Discriminatifs', value 'Comparaison par Paires', description 'Indiquer lequel de deux échantillons est le plus intense sur un attribut, ou lequel est préféré.' },
-                                { group 'Tests Descriptifs', value 'Profil Sensoriel Conventionnel', description 'Un panel entraîné décrit et quantifie tous les attributs sensoriels d'un produit.' },
-                                { group 'Tests Descriptifs', value 'Analyse Descriptive Quantitative (QDA®)', description 'Méthode descriptive rigoureuse utilisant des échelles d'intensité et une analyse statistique poussée.' },
-                                { group 'Tests Descriptifs', value 'Profil Flash', description 'Méthode descriptive rapide où un panel génère ses propres termes pour comparer des produits.' },
-                                { group 'Tests Affectifs (Hédoniques)', value 'Échelle Hédonique', description 'Mesurer le degré d'appréciation (J'aime  Je n'aime pas) d'un produit par des consommateurs. L'échelle à 9 points est un standard.' },
-                                { group 'Tests Affectifs (Hédoniques)', value 'Classement par Préférence', description 'Demander aux consommateurs de classer plusieurs produits du moins préféré au plus préféré.' },
-                                { group 'Tests Affectifs (Hédoniques)', value 'Échelles JAR (Just About Right)', description 'Évaluer si un attribut (ex sucre) est à son niveau idéal (Juste comme il faut).' },
-                                { group 'Autre', value 'autre', description 'Sélectionnez cette option pour spécifier un type de test non listé.' }
-                            ]
+                            id: 'testTypeTree',
+                            title: '7. Type de Test', 
+                            explanation: 'Utilisez cet arbre de décision pour sélectionner le type de test le plus adapté à vos objectifs.', 
+                            example: 'Test Sensoriel > Affectif > Échelle Hédonique', 
+                            type: 'interactive-tree'
                         },
                         { 
-                            inputId 'nombreProduits', 
-                            title '7.1 Nombre de produits', 
-                            explanation 'Indiquez le nombre total de produits qui seront évalués au cours de cette étude.', 
-                            example '3', 
-                            type 'select', 
-                            options Array.from({length 50}, (_, i) = i + 1)
+                            inputId: 'nombreProduits', 
+                            title: '7.1 Nombre de produits', 
+                            explanation: 'Indiquez le nombre total de produits qui seront évalués au cours de cette étude.', 
+                            example: '3', 
+                            type: 'select', 
+                            options: Array.from({length: 50}, (_, i) => i + 1)
                         },
                         { 
-                            id 'dynamicProductContainer',
-                            title '8. Description dudes Produit(s)', 
-                            explanation 'Fournir une description exhaustive de chaque produit pour la traçabilité et pour utiliser les générateurs ci-dessous.', 
-                            example 'Produit A Biscuit 'Croq'Choc'...',
-                            type 'dynamic' 
+                            id: 'dynamicProductContainer',
+                            title: '8. Description du/des Produit(s)', 
+                            explanation: 'Fournir une description exhaustive de chaque produit pour la traçabilité et pour utiliser les générateurs ci-dessous.', 
+                            example: 'Produit A: Biscuit \'Croq\'Choc\'...',
+                            type: 'dynamic' 
                         },
-                        { inputId 'preparation', title '9. Préparation des Échantillons', explanation 'Détailler toutes les étapes de préparation (température, quantité, récipient) pour assurer l'homogénéité et neutraliser les biais.', example '100mL de soupe servis à 65°C dans des bols en céramique blanche.', type 'textarea' },
+                        { inputId: 'preparation', title: '9. Préparation des Échantillons', explanation: 'Détailler toutes les étapes de préparation (température, quantité, récipient) pour assurer l\'homogénéité et neutraliser les biais.', example: '100mL de soupe servis à 65°C dans des bols en céramique blanche.', type: 'textarea' },
                         { 
-                            interactive true,
-                            id 'generatorCodage', 
-                            title '9.1 Codage des Échantillons', 
-                            explanation 'Le codage vise à prévenir tout biais de jugement. Utilisez ce générateur pour créer des codes aléatoires à 3 chiffres pour chaque produit décrit dans la section 8.',
-                            content `
-                                div class=flex flex-col items-center
-                                    button id=code-generator-button class=generator-buttonGénérer les Codesbutton
-                                    div id=code-generator-result class=mt-4 p-4 w-full bg-gray-50 rounded-md border border-gray-200 min-h-[50px]
-                                        p class=text-sm text-gray-500Les codes générés s'afficheront ici.p
-                                    div
-                                div`
+                            interactive: true,
+                            id: 'generatorCodage', 
+                            title: '9.1 Codage des Échantillons', 
+                            explanation: 'Le codage vise à prévenir tout biais de jugement. Utilisez ce générateur pour créer des codes aléatoires à 3 chiffres pour chaque produit décrit dans la section 8.',
+                            content: `
+                                <div class="flex flex-col items-center">
+                                    <button id="code-generator-button" class="generator-button">Générer les Codes</button>
+                                    <div id="code-generator-result" class="mt-4 p-4 w-full bg-gray-50 rounded-md border border-gray-200 min-h-[50px]">
+                                        <p class="text-sm text-gray-500">Les codes générés s'afficheront ici.</p>
+                                    </div>
+                                </div>`
                         }
                     ]
                 },
                 {
-                    id 'panel',
-                    title '3. Panel de Dégustateurs',
-                    icon `svg class=icon fill=none stroke=currentColor viewBox=0 0 24 24 xmlns=httpwww.w3.org2000svgpath stroke-linecap=round stroke-linejoin=round stroke-width=2 d=M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0zpathsvg`,
-                    items [
-                        { inputId 'panelType', title '10.1 Type de Panel', explanation 'Décrire le type de panel (experts, entraînés, consommateurs) en lien avec les objectifs.', example 'Panel de consommateurs réguliers de sodas.', type 'text' },
-                        { inputId 'recrutement', title '10.2 Critères de Recrutement', explanation 'Lister les critères de sélection. L'IA peut suggérer des critères pertinents basés sur les objectifs et le type de panel.', example 'FemmesHommes, 30-55 ans, consommant des yaourts aux fruits = 2 foissemaine, non allergiques au lait.', type 'textarea' },
+                    id: 'panel',
+                    title: '3. Panel de Dégustateurs',
+                    icon: `<svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>`,
+                    items: [
+                        { inputId: 'panelType', title: '10.1 Type de Panel', explanation: 'Décrire le type de panel (experts, entraînés, consommateurs) en lien avec les objectifs.', example: 'Panel de consommateurs réguliers de sodas.', type: 'text' },
+                        { inputId: 'recrutement', title: '10.2 Critères de Recrutement', explanation: 'Lister les critères de sélection. L\'IA peut suggérer des critères pertinents basés sur les objectifs et le type de panel.', example: 'Femmes/Hommes, 30-55 ans, consommant des yaourts aux fruits >= 2 fois/semaine, non allergiques au lait.', type: 'textarea' },
                         { 
-                            inputId 'panelSize', 
-                            title '10.3 Nombre de Sujets', 
-                            explanation 'Indiquer le nombre total de sujets qui participeront au test.', 
-                            example '30', 
-                            type 'select',
-                            options Array.from({length 100}, (_, i) = i + 1)
+                            inputId: 'panelSize', 
+                            title: '10.3 Nombre de Sujets', 
+                            explanation: 'Indiquer le nombre total de sujets qui participeront au test.', 
+                            example: '30', 
+                            type: 'select',
+                            options: Array.from({length: 100}, (_, i) => i + 1)
                         },
                         { 
-                            inputId 'produitsParSujet', 
-                            title '10.4 Produits testés par sujet', 
-                            explanation 'Indiquer combien de produits chaque sujet évaluera. Si ce nombre est inférieur au total, un plan en blocs incomplets sera généré.', 
-                            example '3', 
-                            type 'select',
-                            options []  Will be populated dynamically
+                            inputId: 'produitsParSujet', 
+                            title: '10.4 Produits testés par sujet', 
+                            explanation: 'Indiquer combien de produits chaque sujet évaluera. Si ce nombre est inférieur au total, un plan en blocs incomplets sera généré.', 
+                            example: '3', 
+                            type: 'select',
+                            options: [] // Will be populated dynamically
                         },
-                        { inputId 'formation', title '10.5 Formation (si applicable)', explanation 'Pour les panels entraînés, décrire le programme de formation.', example 'Formation de 60h sur la texture des produits de panification.', type 'textarea' },
-                        { inputId 'consignes', title '10.6 Consignes Avant le Test', explanation 'Lister les instructions données aux sujets pour minimiser les interférences sensorielles.', example 'Ne pas fumer 2h avant la séance, ne pas utiliser de parfum le jour du test, venir à jeun depuis au moins 1h.', type 'textarea' },
+                        { inputId: 'formation', title: '10.5 Formation (si applicable)', explanation: 'Pour les panels entraînés, décrire le programme de formation.', example: 'Formation de 60h sur la texture des produits de panification.', type: 'textarea' },
+                        { inputId: 'consignes', title: '10.6 Consignes Avant le Test', explanation: 'Lister les instructions données aux sujets pour minimiser les interférences sensorielles.', example: 'Ne pas fumer 2h avant la séance, ne pas utiliser de parfum le jour du test, venir à jeun depuis au moins 1h.', type: 'textarea' },
                         { 
-                            interactive true, 
-                            id 'generatorOrdre',
-                            title '10.7 Ordre de Présentation', 
-                            explanation 'Pour neutraliser les effets de rang, l'ordre de présentation doit être contrebalancé. Utilisez ce générateur pour créer un plan adapté au nombre de produits et de sujets.',
-                            content `
-                                div class=flex flex-col items-center
-                                    button id=latin-square-button class=generator-buttonGénérer le Plan de Présentationbutton
-                                    div id=latin-square-result class=mt-4 p-4 w-full bg-gray-50 rounded-md border border-gray-200 min-h-[50px] overflow-x-auto
-                                        p class=text-sm text-gray-500Le plan de présentation s'affichera ici.p
-                                    div
-                                div`
+                            interactive: true, 
+                            id: 'generatorOrdre',
+                            title: '10.7 Ordre de Présentation', 
+                            explanation: 'Pour neutraliser les effets de rang, l\'ordre de présentation doit être contrebalancé. Utilisez ce générateur pour créer un plan adapté au nombre de produits et de sujets.',
+                            content: `
+                                <div class="flex flex-col items-center">
+                                    <button id="latin-square-button" class="generator-button">Générer le Plan de Présentation</button>
+                                    <div id="latin-square-result" class="mt-4 p-4 w-full bg-gray-50 rounded-md border border-gray-200 min-h-[50px] overflow-x-auto">
+                                        <p class="text-sm text-gray-500">Le plan de présentation s'affichera ici.</p>
+                                    </div>
+                                </div>`
                         }
                     ]
                 },
                 {
-                    id 'environnement',
-                    title '4. Environnement & Déroulement',
-                    icon `svg class=icon fill=none stroke=currentColor viewBox=0 0 24 24 xmlns=httpwww.w3.org2000svgpath stroke-linecap=round stroke-linejoin=round stroke-width=2 d=M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4pathsvg`,
-                    items [
-                        { inputId 'conditions', title '11. Conditions de Test', explanation 'Décrire le local de test (idéalement conforme ISO 8589) et le matériel fourni.', example 'Cabines de dégustation individuelles, éclairage lumière du jour contrôlé, température de 21°C.', type 'textarea' },
-                        { inputId 'deroulement', title '12. Déroulement de la Séance', explanation 'Rédiger les instructions claires et standardisées données aux sujets, et décrire la fiche d'évaluation.', example 'Instructions pour un test triangulaire lues au début de la séance, puis réponses collectées sur tablette.', type 'textarea' }
+                    id: 'environnement',
+                    title: '4. Environnement & Déroulement',
+                    icon: `<svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>`,
+                    items: [
+                        { inputId: 'conditions', title: '11. Conditions de Test', explanation: 'Décrire le local de test (idéalement conforme ISO 8589) et le matériel fourni.', example: 'Cabines de dégustation individuelles, éclairage lumière du jour contrôlé, température de 21°C.', type: 'textarea' },
+                        { inputId: 'deroulement', title: '12. Déroulement de la Séance', explanation: 'Rédiger les instructions claires et standardisées données aux sujets, et décrire la fiche d\'évaluation.', example: 'Instructions pour un test triangulaire lues au début de la séance, puis réponses collectées sur tablette.', type: 'textarea' }
                     ]
                 },
                 {
-                    id 'analyse',
-                    title '5. Évaluation & Analyse',
-                    icon `svg class=icon fill=none stroke=currentColor viewBox=0 0 24 24 xmlns=httpwww.w3.org2000svgpath stroke-linecap=round stroke-linejoin=round stroke-width=2 d=M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2zpathsvg`,
-                    items [
-                        { inputId 'echelles', title '13. Descripteurs et Échelles de Mesure', explanation 'Lister les attributs à évaluer et le type d'échelle de mesure utilisée.', example 'Appréciation globale évaluée sur une échelle hédonique à 9 points. Intensité de l'amertume sur une échelle linéaire de 0 à 10.', type 'textarea' },
-                        { inputId 'collecte', title '14. Collecte et Enregistrement', explanation 'Décrire comment les données sont collectées, enregistrées et vérifiées pour assurer leur intégrité.', example 'Collecte sur tablette via FIZZ, export automatique des données en .csv.', type 'text' },
-                        { inputId 'statistiques', title '15. Analyse Statistique', explanation 'Spécifier les méthodes statistiques utilisées.', example 'ANOVA sur les notes hédoniques pour tester l'effet produit, suivie de tests post-hoc de Tukey si p  0.05.', type 'textarea' },
-                        { inputId 'interpretation', title '16. Critères d'Interprétation des Résultats', explanation 'Définir en amont comment les résultats seront interprétés. Une différence statistiquement significative est-elle commercialement pertinente ', example 'Une différence de note hédonique supérieure à 1 point sera considérée comme commercialement pertinente.', type 'text' }
+                    id: 'analyse',
+                    title: '5. Évaluation & Analyse',
+                    icon: `<svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>`,
+                    items: [
+                        { inputId: 'echelles', title: '13. Descripteurs et Échelles de Mesure', explanation: 'Lister les attributs à évaluer et le type d\'échelle de mesure utilisée.', example: 'Appréciation globale évaluée sur une échelle hédonique à 9 points. Intensité de l\'amertume sur une échelle linéaire de 0 à 10.', type: 'textarea' },
+                        { inputId: 'collecte', title: '14. Collecte et Enregistrement', explanation: 'Décrire comment les données sont collectées, enregistrées et vérifiées pour assurer leur intégrité.', example: 'Collecte sur tablette via FIZZ, export automatique des données en .csv.', type: 'text' },
+                        { inputId: 'statistiques', title: '15. Analyse Statistique', explanation: 'Spécifier les méthodes statistiques utilisées.', example: 'ANOVA sur les notes hédoniques pour tester l\'effet produit, suivie de tests post-hoc de Tukey si p < 0.05.', type: 'textarea' },
+                        { inputId: 'interpretation', title: '16. Critères d\'Interprétation des Résultats', explanation: 'Définir en amont comment les résultats seront interprétés. Une différence statistiquement significative est-elle commercialement pertinente ?', example: 'Une différence de note hédonique supérieure à 1 point sera considérée comme commercialement pertinente.', type: 'text' }
                     ]
                 },
                 {
-                    id 'rapport',
-                    title '6. Rapport & Annexes',
-                    icon `svg class=icon fill=none stroke=currentColor viewBox=0 0 24 24 xmlns=httpwww.w3.org2000svgpath stroke-linecap=round stroke-linejoin=round stroke-width=2 d=M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2zpathsvg`,
-                    items [
-                        { inputId 'contenuRapport', title '17. Contenu du Rapport', explanation 'Définir la structure type du rapport final (Résumé, Intro, Méthodes, Résultats, Discussion, Conclusion).', example 'Rapport structuré avec un résumé exécutif d'une page destiné aux décideurs.', type 'textarea' },
-                        { inputId 'ethique', title '18. Confidentialité & Éthique', explanation 'Mentionner les dispositions pour la confidentialité des résultats, l'anonymat et le consentement éclairé des panélistes.', example 'Signature d'un formulaire de consentement éclairé avant participation. Données traitées de manière anonyme.', type 'text' },
-                        { inputId 'references', title '19. Références', explanation 'Lister les normes (ISO, AFNOR) et les ouvrages scientifiques de référence utilisés pour élaborer le protocole.', example 'NF EN ISO 8589 Conception des locaux d'essais.', type 'textarea' },
-                        { inputId 'annexes', title '20. Annexes', explanation 'Lister les documents joints au protocole (modèles de fiches, questionnaires, plans détaillés).', example 'Annexe 1 Modèle du formulaire de consentement.', type 'textarea' }
+                    id: 'rapport',
+                    title: '6. Rapport & Annexes',
+                    icon: `<svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>`,
+                    items: [
+                        { inputId: 'contenuRapport', title: '17. Contenu du Rapport', explanation: 'Définir la structure type du rapport final (Résumé, Intro, Méthodes, Résultats, Discussion, Conclusion).', example: 'Rapport structuré avec un résumé exécutif d\'une page destiné aux décideurs.', type: 'textarea' },
+                        { inputId: 'ethique', title: '18. Confidentialité & Éthique', explanation: 'Mentionner les dispositions pour la confidentialité des résultats, l\'anonymat et le consentement éclairé des panélistes.', example: 'Signature d\'un formulaire de consentement éclairé avant participation. Données traitées de manière anonyme.', type: 'text' },
+                        { inputId: 'references', title: '19. Références', explanation: 'Lister les normes (ISO, AFNOR) et les ouvrages scientifiques de référence utilisés pour élaborer le protocole.', example: 'NF EN ISO 8589: Conception des locaux d\'essais.', type: 'textarea' },
+                        { inputId: 'annexes', title: '20. Annexes', explanation: 'Lister les documents joints au protocole (modèles de fiches, questionnaires, plans détaillés).', example: 'Annexe 1: Modèle du formulaire de consentement.', type: 'textarea' }
                     ]
                 }
             ]
         };
 
-        const toggleLoading = (isLoading, message = 'Opération en cours...') = {
+        const toggleLoading = (isLoading, message = 'Opération en cours...') => {
             const overlay = document.getElementById('loading-overlay');
             overlay.textContent = message;
             if (isLoading) {
@@ -319,175 +327,175 @@ body class=antialiased
         };
         
         function renderAccordions(items) {
-            return items.map(item = {
+            return items.map(item => {
                 if (item.interactive) {
-                     const savedCodesHtml = formData['generatedCodesHtml']  'p class=text-sm text-gray-500Les codes générés s'afficheront ici.p';
-                     const savedLatinSquareHtml = formData['latinSquareHtml']  'p class=text-sm text-gray-500Le plan de présentation s'affichera ici.p';
+                     const savedCodesHtml = formData['generatedCodesHtml'] || '<p class="text-sm text-gray-500">Les codes générés s\'afficheront ici.</p>';
+                     const savedLatinSquareHtml = formData['latinSquareHtml'] || '<p class="text-sm text-gray-500">Le plan de présentation s\'affichera ici.</p>';
                      
                      let contentHtml;
                      if (item.id === 'generatorCodage') {
-                         contentHtml = `div class=flex flex-col items-center
-                                    button id=code-generator-button class=generator-buttonGénérer les Codesbutton
-                                    div id=code-generator-result class=mt-4 p-4 w-full bg-gray-50 rounded-md border border-gray-200 min-h-[50px]
+                         contentHtml = `<div class="flex flex-col items-center">
+                                    <button id="code-generator-button" class="generator-button">Générer les Codes</button>
+                                    <div id="code-generator-result" class="mt-4 p-4 w-full bg-gray-50 rounded-md border border-gray-200 min-h-[50px]">
                                         ${savedCodesHtml}
-                                    div
-                                div`;
+                                    </div>
+                                </div>`;
                      } else if (item.id === 'generatorOrdre') {
-                         contentHtml = `div class=flex flex-col items-center
-                                    button id=latin-square-button class=generator-buttonGénérer le Plan de Présentationbutton
-                                    div id=latin-square-result class=mt-4 p-4 w-full bg-gray-50 rounded-md border border-gray-200 min-h-[50px] overflow-x-auto
+                         contentHtml = `<div class="flex flex-col items-center">
+                                    <button id="latin-square-button" class="generator-button">Générer le Plan de Présentation</button>
+                                    <div id="latin-square-result" class="mt-4 p-4 w-full bg-gray-50 rounded-md border border-gray-200 min-h-[50px] overflow-x-auto">
                                         ${savedLatinSquareHtml}
-                                    div
-                                div`;
+                                    </div>
+                                </div>`;
                      }
                      
                      return `
-                        div class=mb-2
-                            div class=accordion-header bg-white rounded-lg shadow-sm
-                                h3 class=text-lg font-semibold${item.title}h3
-                                svg class=accordion-arrow w-6 h-6 text-gray-500 fill=none stroke=currentColor viewBox=0 0 24 24 xmlns=httpwww.w3.org2000svgpath stroke-linecap=round stroke-linejoin=round stroke-width=2 d=M19 9l-7 7-7-7pathsvg
-                            div
-                            div class=accordion-content
-                                div class=space-y-4
-                                    div
-                                        h4 class=font-semibold text-violet-600Explication Pédagogiqueh4
-                                        p class=mt-1 text-gray-700${item.explanation}p
-                                    div
-                                    div class=mt-4
+                        <div class="mb-2">
+                            <div class="accordion-header bg-white rounded-lg shadow-sm">
+                                <h3 class="text-lg font-semibold">${item.title}</h3>
+                                <svg class="accordion-arrow w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </div>
+                            <div class="accordion-content">
+                                <div class="space-y-4">
+                                    <div>
+                                        <h4 class="font-semibold text-violet-600">Explication Pédagogique</h4>
+                                        <p class="mt-1 text-gray-700">${item.explanation}</p>
+                                    </div>
+                                    <div class="mt-4">
                                         ${contentHtml}
-                                    div
-                                div
-                            div
-                        div`;
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
                 }
 
                 if(item.type === 'dynamic'){
                      return `
-                        div class=mb-2
-                            div class=accordion-header bg-white rounded-lg shadow-sm
-                                h3 class=text-lg font-semibold${item.title}h3
-                                svg class=accordion-arrow w-6 h-6 text-gray-500 fill=none stroke=currentColor viewBox=0 0 24 24 xmlns=httpwww.w3.org2000svgpath stroke-linecap=round stroke-linejoin=round stroke-width=2 d=M19 9l-7 7-7-7pathsvg
-                            div
-                            div class=accordion-content
-                                div class=space-y-4
-                                    div
-                                        h4 class=font-semibold text-violet-600Explication Pédagogiqueh4
-                                        p class=mt-1 text-gray-700${item.explanation}p
-                                    div
-                                    div class=p-3 bg-gray-50 rounded-md border border-gray-200
-                                        h4 class=font-semibold text-gray-600Exempleh4
-                                        p class=mt-1 text-sm text-gray-800 italic${item.example}p
-                                    div
-                                    div id=${item.id} class=mt-4
-                                        !-- Dynamic product inputs will be rendered here --
-                                    div
-                                div
-                            div
-                        div`;
+                        <div class="mb-2">
+                            <div class="accordion-header bg-white rounded-lg shadow-sm">
+                                <h3 class="text-lg font-semibold">${item.title}</h3>
+                                <svg class="accordion-arrow w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </div>
+                            <div class="accordion-content">
+                                <div class="space-y-4">
+                                    <div>
+                                        <h4 class="font-semibold text-violet-600">Explication Pédagogique</h4>
+                                        <p class="mt-1 text-gray-700">${item.explanation}</p>
+                                    </div>
+                                    <div class="p-3 bg-gray-50 rounded-md border border-gray-200">
+                                        <h4 class="font-semibold text-gray-600">Exemple</h4>
+                                        <p class="mt-1 text-sm text-gray-800 italic">"${item.example}"</p>
+                                    </div>
+                                    <div id="${item.id}" class="mt-4">
+                                        <!-- Dynamic product inputs will be rendered here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
                 }
                 
-                const savedValue = formData[item.inputId]  '';
+                if (item.type === 'interactive-tree') {
+                    return `
+                        <div class="mb-2">
+                            <div class="accordion-header bg-white rounded-lg shadow-sm">
+                                <h3 class="text-lg font-semibold">${item.title}</h3>
+                                <svg class="accordion-arrow w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </div>
+                            <div class="accordion-content">
+                                <div class="space-y-4">
+                                     <div>
+                                        <h4 class="font-semibold text-violet-600">Explication Pédagogique</h4>
+                                        <p class="mt-1 text-gray-700">${item.explanation}</p>
+                                    </div>
+                                    <div class="p-3 bg-gray-50 rounded-md border border-gray-200">
+                                        <h4 class="font-semibold text-gray-600">Exemple</h4>
+                                        <p class="mt-1 text-sm text-gray-800 italic">"${item.example}"</p>
+                                    </div>
+                                    <div id="decision-tree-container" class="mt-4"></div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                const savedValue = formData[item.inputId] || '';
                 let inputElementHtml;
 
                 switch (item.type) {
-                    case 'textarea'
-                        inputElementHtml = `textarea id=${item.inputId} class=form-textarea${savedValue}textarea`;
+                    case 'textarea':
+                        inputElementHtml = `<textarea id="${item.inputId}" class="form-textarea">${savedValue}</textarea>`;
                         break;
-                    case 'select'
-                        const optionsHtml = item.options.map(opt = 
-                            `option value=${opt} ${savedValue == opt  'selected'  ''}${opt}option`
+                    case 'select':
+                        const optionsHtml = item.options.map(opt => 
+                            `<option value="${opt}" ${savedValue == opt ? 'selected' : ''}>${opt}</option>`
                         ).join('');
-                        inputElementHtml = `select id=${item.inputId} class=form-select${optionsHtml}select`;
+                        inputElementHtml = `<select id="${item.inputId}" class="form-select">${optionsHtml}</select>`;
                         break;
-                    case 'select-tooltip'
-                        const groupedOptions = item.options.reduce((acc, option) = {
-                            (acc[option.group] = acc[option.group]  []).push(option);
-                            return acc;
-                        }, {});
-
-                        let selectHtml = `select id=${item.inputId} class=form-select`;
-                        for (const group in groupedOptions) {
-                            selectHtml += `optgroup label=${group}`;
-                            groupedOptions[group].forEach(opt = {
-                                selectHtml += `option value=${opt.value} title=${opt.description} ${savedValue == opt.value  'selected'  ''}${opt.value}option`;
-                            });
-                            selectHtml += `optgroup`;
-                        }
-                        selectHtml += `select`;
-                        const savedAutreValue = formData['autreTestType']  '';
-                        const autreHiddenClass = savedValue === 'autre'  ''  'hidden';
-                        inputElementHtml = `
-                            ${selectHtml}
-                            div id=autreTestTypeContainer class=mt-2 ${autreHiddenClass}
-                                label for=autreTestType class=font-semibold text-gray-600 text-smPrécisez le type de test label
-                                input type=text id=autreTestType class=form-input mt-1 value=${savedAutreValue}
-                            div`;
-                        break;
-                    default  'text' and others
-                        inputElementHtml = `input type=text id=${item.inputId} class=form-input value=${savedValue}`;
+                    default: // 'text' and others
+                        inputElementHtml = `<input type="text" id="${item.inputId}" class="form-input" value="${savedValue}">`;
                         break;
                 }
                 
                 return `
-                div class=mb-2
-                    div class=accordion-header bg-white rounded-lg shadow-sm
-                        h3 class=text-lg font-semibold${item.title}h3
-                        svg class=accordion-arrow w-6 h-6 text-gray-500 fill=none stroke=currentColor viewBox=0 0 24 24 xmlns=httpwww.w3.org2000svgpath stroke-linecap=round stroke-linejoin=round stroke-width=2 d=M19 9l-7 7-7-7pathsvg
-                    div
-                    div class=accordion-content
-                        div class=space-y-4
-                            div
-                                h4 class=font-semibold text-violet-600Explication Pédagogiqueh4
-                                p class=mt-1 text-gray-700${item.explanation}p
-                            div
-                            div class=p-3 bg-gray-50 rounded-md border border-gray-200
-                                h4 class=font-semibold text-gray-600Exempleh4
-                                p class=mt-1 text-sm text-gray-800 italic${item.example}p
-                            div
-                            div class=mt-4
-                                label for=${item.inputId} class=font-semibold text-gray-700Votre saisie label
+                <div class="mb-2">
+                    <div class="accordion-header bg-white rounded-lg shadow-sm">
+                        <h3 class="text-lg font-semibold">${item.title}</h3>
+                        <svg class="accordion-arrow w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="space-y-4">
+                            <div>
+                                <h4 class="font-semibold text-violet-600">Explication Pédagogique</h4>
+                                <p class="mt-1 text-gray-700">${item.explanation}</p>
+                            </div>
+                            <div class="p-3 bg-gray-50 rounded-md border border-gray-200">
+                                <h4 class="font-semibold text-gray-600">Exemple</h4>
+                                <p class="mt-1 text-sm text-gray-800 italic">"${item.example}"</p>
+                            </div>
+                            <div class="mt-4">
+                                <label for="${item.inputId}" class="font-semibold text-gray-700">Votre saisie :</label>
                                 ${inputElementHtml}
-                            div
-                        div
-                    div
-                div`;
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
             }).join('');
         }
         
         function getProductList() {
-            const count = parseInt(formData['nombreProduits']  0, 10);
+            const count = parseInt(formData['nombreProduits'] || 0, 10);
             const products = [];
-            for (let i = 1; i = count; i++) {
-                products.push(formData[`produit_${i}`]  `Produit ${i} (non décrit)`);
+            for (let i = 1; i <= count; i++) {
+                products.push(formData[`produit_${i}`] || `Produit ${i} (non décrit)`);
             }
             return products;
         }
 
         function generateRandomCodes() {
             const products = getProductList();
-            if (products.some(p = p.includes('(non décrit)'))) {
-                alert(Veuillez d'abord décrire tous les produits dans la section 8 avant de générer les codes.);
+            if (products.some(p => p.includes('(non décrit)'))) {
+                alert("Veuillez d'abord décrire tous les produits dans la section 8 avant de générer les codes.");
                 return;
             };
 
             const codes = new Set();
-            while (codes.size  products.length) {
-                codes.add(Math.floor(100 + Math.random()  900));
+            while (codes.size < products.length) {
+                codes.add(Math.floor(100 + Math.random() * 900));
             }
 
             const codeArray = Array.from(codes);
             const resultDiv = document.getElementById('code-generator-result');
-            let htmlResult = 'ul class=list-disc list-inside';
+            let htmlResult = '<ul class="list-disc list-inside">';
             let textResult = '';
 
             const productCodes = {};
-            products.forEach((product, index) = {
+            products.forEach((product, index) => {
                 const code = codeArray[index];
                 productCodes[product] = code;
-                htmlResult += `li class=mb-1span class=font-semibold${product}span ${code}li`;
-                textResult += `${product} ${code}n`;
+                htmlResult += `<li class="mb-1"><span class="font-semibold">${product}:</span> ${code}</li>`;
+                textResult += `${product}: ${code}\n`;
             });
-            htmlResult += 'ul';
+            htmlResult += '</ul>';
 
             resultDiv.innerHTML = htmlResult;
             formData['generatedCodesHtml'] = htmlResult;
@@ -497,46 +505,46 @@ body class=antialiased
 
         function generatePresentationPlan() {
             const products = getProductList();
-            if (products.some(p = p.includes('(non décrit)'))) {
-                alert(Veuillez d'abord décrire tous les produits dans la section 8 avant de générer le plan.);
+            if (products.some(p => p.includes('(non décrit)'))) {
+                alert("Veuillez d'abord décrire tous les produits dans la section 8 avant de générer le plan.");
                 return;
             }
 
             if (!formData['productCodes']) {
-                alert(Veuillez d'abord générer les codes pour les produits dans la section 9.1.);
+                alert("Veuillez d'abord générer les codes pour les produits dans la section 9.1.");
                 return;
             }
 
             const productCodesMap = formData['productCodes'];
-            const productCodes = products.map(p = productCodesMap[p]);
+            const productCodes = products.map(p => productCodesMap[p]);
             
             const n = products.length;
-            const p = parseInt(formData['panelSize']  n, 10);
-            const k = parseInt(formData['produitsParSujet']  n, 10);
+            const p = parseInt(formData['panelSize'] || n, 10);
+            const k = parseInt(formData['produitsParSujet'] || n, 10);
 
-            if (k  n) {
-                alert(Le nombre de produits par sujet ne peut pas être supérieur au nombre total de produits.);
+            if (k > n) {
+                alert("Le nombre de produits par sujet ne peut pas être supérieur au nombre total de produits.");
                 return;
             }
 
             let plan = [];
             
-            if (k === n) {  Complete Block Design (Latin Square)
+            if (k === n) { // Complete Block Design (Latin Square)
                 let baseSquare = [];
                 let firstRow = [...productCodes];
-                for (let i = 0; i  n; i++) {
+                for (let i = 0; i < n; i++) {
                     baseSquare.push([...firstRow]);
                     firstRow.push(firstRow.shift());
                 }
-                for (let i = 0; i  p; i++) {
+                for (let i = 0; i < p; i++) {
                     plan.push(baseSquare[i % n]);
                 }
-            } else {  Incomplete Block Design (Cyclic)
+            } else { // Incomplete Block Design (Cyclic)
                 let initialBlock = productCodes.slice(0, k);
-                for (let i = 0; i  p; i++) {
+                for (let i = 0; i < p; i++) {
                     let newBlock = [];
-                    let currentBlock = plan.length  0  plan[plan.length - 1]  initialBlock;
-                     if(i  0) {
+                    let currentBlock = plan.length > 0 ? plan[plan.length - 1] : initialBlock;
+                     if(i > 0) {
                         currentBlock = [];
                         const lastPlanRow = plan[i-1];
                         for(const code of lastPlanRow) {
@@ -551,29 +559,29 @@ body class=antialiased
             }
 
             const resultDiv = document.getElementById('latin-square-result');
-            let htmlResult = `p class=mb-2 text-sm text-gray-600Ordre de présentation pour chaque sujet (avec codes) p
-                              table class=w-full text-left border-collapse
-                                theadtr
-                                th class=py-2 px-3 font-bold uppercase text-sm text-gray-600 border-bSujetth`;
-            for(let i=1; i=k; i++) {
-                htmlResult += `th class=py-2 px-3 font-bold uppercase text-sm text-gray-600 border-b text-centerPos. ${i}th`;
+            let htmlResult = `<p class="mb-2 text-sm text-gray-600">Ordre de présentation pour chaque sujet (avec codes) :</p>
+                              <table class="w-full text-left border-collapse">
+                                <thead><tr>
+                                <th class="py-2 px-3 font-bold uppercase text-sm text-gray-600 border-b">Sujet</th>`;
+            for(let i=1; i<=k; i++) {
+                htmlResult += `<th class="py-2 px-3 font-bold uppercase text-sm text-gray-600 border-b text-center">Pos. ${i}</th>`;
             }
-            htmlResult += `trtheadtbody`;
+            htmlResult += `</tr></thead><tbody>`;
 
-            let textResult = `Ordre de Présentationn`;
-            plan.forEach((row, rowIndex) = {
-                htmlResult += `tr class=hoverbg-gray-100`;
-                htmlResult += `td class=py-2 px-3 border-b border-gray-200 font-semiboldSujet ${rowIndex + 1}td`;
-                textResult += `Sujet ${rowIndex + 1} `;
-                row.forEach(code = {
-                    htmlResult += `td class=py-2 px-3 border-b border-gray-200 text-center${code}td`;
+            let textResult = `Ordre de Présentation:\n`;
+            plan.forEach((row, rowIndex) => {
+                htmlResult += `<tr class="hover:bg-gray-100">`;
+                htmlResult += `<td class="py-2 px-3 border-b border-gray-200 font-semibold">Sujet ${rowIndex + 1}</td>`;
+                textResult += `Sujet ${rowIndex + 1}: `;
+                row.forEach(code => {
+                    htmlResult += `<td class="py-2 px-3 border-b border-gray-200 text-center">${code}</td>`;
                     textResult += `${code}, `;
                 });
-                htmlResult += `tr`;
-                textResult = textResult.slice(0, -2) + `n`;
+                htmlResult += `</tr>`;
+                textResult = textResult.slice(0, -2) + `\n`;
             });
 
-            htmlResult += `tbodytable`;
+            htmlResult += `</tbody></table>`;
             resultDiv.innerHTML = htmlResult;
             formData['latinSquareHtml'] = htmlResult;
             formData['latinSquareText'] = textResult;
@@ -583,23 +591,23 @@ body class=antialiased
             const container = document.getElementById('dynamicProductContainer');
             if (!container) return;
 
-            const count = parseInt(formData['nombreProduits']  0, 10);
+            const count = parseInt(formData['nombreProduits'] || 0, 10);
             let inputsHtml = '';
-            for (let i = 1; i = count; i++) {
-                const savedValue = formData[`produit_${i}`]  '';
+            for (let i = 1; i <= count; i++) {
+                const savedValue = formData[`produit_${i}`] || '';
                 inputsHtml += `
-                    div class=mb-3
-                        label for=produit_${i} class=font-semibold text-gray-700Produit ${i}label
-                        input type=text id=produit_${i} class=form-input mt-1 value=${savedValue}
-                    div
+                    <div class="mb-3">
+                        <label for="produit_${i}" class="font-semibold text-gray-700">Produit ${i}</label>
+                        <input type="text" id="produit_${i}" class="form-input mt-1" value="${savedValue}">
+                    </div>
                 `;
             }
             container.innerHTML = inputsHtml;
 
-            for (let i = 1; i = count; i++) {
+            for (let i = 1; i <= count; i++) {
                 const inputField = document.getElementById(`produit_${i}`);
                 if (inputField) {
-                    inputField.addEventListener('input', (event) = {
+                    inputField.addEventListener('input', (event) => {
                         formData[`produit_${i}`] = event.target.value;
                     });
                 }
@@ -607,18 +615,18 @@ body class=antialiased
         }
 
         function updateProduitsParSujetOptions() {
-            const totalProduits = parseInt(formData['nombreProduits']  1, 10);
+            const totalProduits = parseInt(formData['nombreProduits'] || 1, 10);
             const select = document.getElementById('produitsParSujet');
             if (!select) return;
 
             const currentValue = parseInt(select.value, 10);
             let optionsHtml = '';
-            for (let i = 1; i = totalProduits; i++) {
-                optionsHtml += `option value=${i}${i}option`;
+            for (let i = 1; i <= totalProduits; i++) {
+                optionsHtml += `<option value="${i}">${i}</option>`;
             }
             select.innerHTML = optionsHtml;
             
-            if (currentValue && currentValue = totalProduits) {
+            if (currentValue && currentValue <= totalProduits) {
                 select.value = currentValue;
             } else {
                 select.value = totalProduits;
@@ -632,17 +640,17 @@ body class=antialiased
                 container.innerHTML = section.content;
             } else {
                 container.innerHTML = `
-                    h2 class=text-3xl font-bold mb-6${section.title}h2
-                    div id=accordion-container
+                    <h2 class="text-3xl font-bold mb-6">${section.title}</h2>
+                    <div id="accordion-container">
                         ${renderAccordions(section.items)}
-                    div`;
+                    </div>`;
             }
 
-            document.querySelectorAll('.accordion-header').forEach(header = {
-                header.addEventListener('click', () = {
+            document.querySelectorAll('.accordion-header').forEach(header => {
+                header.addEventListener('click', () => {
                     const content = header.nextElementSibling;
                     const isOpen = content.classList.contains('open');
-                    document.querySelectorAll('.accordion-content.open').forEach(openContent = {
+                    document.querySelectorAll('.accordion-content.open').forEach(openContent => {
                         openContent.classList.remove('open');
                         openContent.previousElementSibling.classList.remove('open');
                     });
@@ -654,24 +662,16 @@ body class=antialiased
             });
 
             if (section.items) {
-                section.items.forEach(item = {
+                section.items.forEach(item => {
                     if (item.inputId) {
                         const inputField = document.getElementById(item.inputId);
                         if (inputField) {
-                            const eventType = inputField.tagName.toLowerCase() === 'select'  'change'  'input';
-                            inputField.addEventListener(eventType, (event) = {
+                            const eventType = inputField.tagName.toLowerCase() === 'select' ? 'change' : 'input';
+                            inputField.addEventListener(eventType, (event) => {
                                 formData[item.inputId] = event.target.value;
                                 if (item.inputId === 'nombreProduits') {
                                     updateProduitsParSujetOptions();
                                     updateProductInputs();
-                                }
-                                if (item.inputId === 'testType') {
-                                    const autreContainer = document.getElementById('autreTestTypeContainer');
-                                    if (event.target.value === 'autre') {
-                                        autreContainer.classList.remove('hidden');
-                                    } else {
-                                        autreContainer.classList.add('hidden');
-                                    }
                                 }
                             });
                         }
@@ -679,19 +679,16 @@ body class=antialiased
                 });
             }
             
-            const autreTestTypeInput = document.getElementById('autreTestType');
-            if(autreTestTypeInput) {
-                autreTestTypeInput.addEventListener('input', (event) = {
-                    formData['autreTestType'] = event.target.value;
-                });
-            }
-
             if (document.getElementById('dynamicProductContainer')) {
                 updateProductInputs();
             }
             
             if(document.getElementById('produitsParSujet')) {
                 updateProduitsParSujetOptions();
+            }
+
+            if(document.getElementById('decision-tree-container')) {
+                setupDecisionTree();
             }
 
             const codeGenButton = document.getElementById('code-generator-button');
@@ -707,37 +704,37 @@ body class=antialiased
         
         function exportToPdf() {
             if (typeof window.jspdf === 'undefined') {
-                alert(La librairie d'exportation PDF n'a pas pu être chargée. Veuillez vérifier votre connexion internet et réessayer.);
+                alert("La librairie d'exportation PDF n'a pas pu être chargée. Veuillez vérifier votre connexion internet et réessayer.");
                 return;
             }
             const { jsPDF } = window.jspdf;
 
             toggleLoading(true, 'Exportation en cours...');
             
-            setTimeout(() = {
+            setTimeout(() => {
                 try {
                     const doc = new jsPDF({
-                        orientation 'p',
-                        unit 'mm',
-                        format 'a4'
+                        orientation: 'p',
+                        unit: 'mm',
+                        format: 'a4'
                     });
                     const margin = 15;
                     const pageWidth = doc.internal.pageSize.getWidth();
                     const pageHeight = doc.internal.pageSize.getHeight();
-                    const usableWidth = pageWidth - 2  margin;
+                    const usableWidth = pageWidth - 2 * margin;
                     let y = margin;
                     
-                    const protocolTitle = formData['titre']  Protocole Sensoriel;
+                    const protocolTitle = formData['titre'] || "Protocole Sensoriel";
                     
                     doc.setFont('helvetica', 'bold');
                     doc.setFontSize(18);
-                    doc.text(protocolTitle, pageWidth  2, y, { align 'center' });
+                    doc.text(protocolTitle, pageWidth / 2, y, { align: 'center' });
                     y += 15;
 
                     for (const section of protocolData.sections) {
                         if (!section.items) continue;
 
-                        if (y  pageHeight - margin - 20) {
+                        if (y > pageHeight - margin - 20) {
                             doc.addPage();
                             y = margin;
                         }
@@ -749,7 +746,7 @@ body class=antialiased
                         y += 8;
 
                         for (const item of section.items) {
-                            if (y  pageHeight - margin - 15) {
+                            if (y > pageHeight - margin - 15) {
                                 doc.addPage();
                                 y = margin;
                             }
@@ -759,25 +756,22 @@ body class=antialiased
                             
                             const itemTitleLines = doc.splitTextToSize(item.title, usableWidth);
                             doc.text(itemTitleLines, margin, y);
-                            y += itemTitleLines.length  5;
+                            y += itemTitleLines.length * 5;
 
-                            let value = Non renseigné;
+                            let value = "Non renseigné";
                             if (item.inputId) {
-                                value = formData[item.inputId]  Non renseigné;
-                                if (item.inputId === 'testType' && value === 'autre') {
-                                    value = formData['autreTestType']  'Autre (non précisé)';
-                                }
+                                value = formData[item.inputId] || "Non renseigné";
                             } else if (item.type === 'dynamic') {
-                                const count = parseInt(formData['nombreProduits']  0, 10);
+                                const count = parseInt(formData['nombreProduits'] || 0, 10);
                                 let productDescriptions = '';
-                                for(let i = 1; i = count; i++) {
-                                    productDescriptions += `Produit ${i} ${formData['produit_' + i]  'Non décrit'}n`;
+                                for(let i = 1; i <= count; i++) {
+                                    productDescriptions += `Produit ${i}: ${formData['produit_' + i] || 'Non décrit'}\n`;
                                 }
-                                value = productDescriptions.trim()  Aucun produit décrit;
+                                value = productDescriptions.trim() || "Aucun produit décrit";
                             } else if (item.interactive && item.title.includes('Codage')) {
-                                value = formData['generatedCodesText']  Non généré;
+                                value = formData['generatedCodesText'] || "Non généré";
                             } else if (item.interactive && item.title.includes('Ordre')) {
-                                value = formData['latinSquareText']  Non généré;
+                                value = formData['latinSquareText'] || "Non généré";
                             }
 
                             doc.setFont('helvetica', 'normal');
@@ -785,19 +779,19 @@ body class=antialiased
                             doc.setTextColor(75, 85, 99);
                             
                             const valueLines = doc.splitTextToSize(value, usableWidth);
-                             if (y + (valueLines.length  4.5)  pageHeight - margin) {
+                             if (y + (valueLines.length * 4.5) > pageHeight - margin) {
                                 doc.addPage();
                                 y = margin;
                             }
                             doc.text(valueLines, margin + 5, y);
-                            y += valueLines.length  4.5 + 5;
+                            y += valueLines.length * 4.5 + 5;
                         }
                         y += 5;
                     }
-                    doc.save(`${protocolTitle.replace( g, '_')}.pdf`);
+                    doc.save(`${protocolTitle.replace(/ /g, '_')}.pdf`);
                 } catch (error) {
-                    console.error(Erreur lors de la génération du PDF, error);
-                    alert(Une erreur est survenue lors de la création du PDF. Veuillez consulter la console pour plus de détails.);
+                    console.error("Erreur lors de la génération du PDF:", error);
+                    alert("Une erreur est survenue lors de la création du PDF. Veuillez consulter la console pour plus de détails.");
                 } finally {
                     toggleLoading(false);
                 }
@@ -806,7 +800,7 @@ body class=antialiased
 
         function buildNav() {
             const navContainer = document.getElementById('main-nav');
-            protocolData.sections.forEach(section = {
+            protocolData.sections.forEach(section => {
                 const link = document.createElement('a');
                 link.className = 'nav-link';
                 link.dataset.section = section.id;
@@ -817,20 +811,20 @@ body class=antialiased
 
         function handleNavigation() {
             const navLinks = document.querySelectorAll('.nav-link');
-            navLinks.forEach(link = {
-                link.addEventListener('click', () = {
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
                     const sectionId = link.dataset.section;
-                    navLinks.forEach(l = l.classList.remove('active'));
+                    navLinks.forEach(l => l.classList.remove('active'));
                     link.classList.add('active');
-                    const sectionData = protocolData.sections.find(s = s.id === sectionId);
+                    const sectionData = protocolData.sections.find(s => s.id === sectionId);
                     
                     const container = document.getElementById('content-container');
                     container.style.opacity = 0;
-                    setTimeout(() = {
+                    setTimeout(() => {
                         renderSection(sectionData);
                         container.style.opacity = 1;
                         container.scrollTop = 0;
-                        document.querySelector('.accordion-header').click();
+                        document.querySelector('.accordion-header')?.click();
                     }, 200);
                 });
             });
@@ -839,11 +833,11 @@ body class=antialiased
         function init() {
             buildNav();
             handleNavigation();
-            document.querySelector('.nav-link[data-section=introduction]').click();
+            document.querySelector('.nav-link[data-section="introduction"]').click();
             document.getElementById('export-pdf-button').addEventListener('click', exportToPdf);
         }
 
         document.addEventListener('DOMContentLoaded', init);
-    script
-body
-html
+    </script>
+</body>
+</html>
