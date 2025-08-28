@@ -15,7 +15,7 @@
         - General Structure: Content is organized into expandable accordion cards for each of the 20 points, allowing users to fill in data. Goal: Organize & Collect Data. Method: HTML/CSS/JS.
         - PDF Export: A core feature to generate a document from the user-entered data. Goal: Output. Method: jsPDF library.
         - Interactive Generators: Buttons for generating random codes and Latin Squares/BIBD to assist in protocol creation. Goal: Automate & Assist. Method: JS DOM manipulation.
-        - Decision Tree: An interactive guide for selecting the correct sensory test type. Goal: Guide & Educate. Method: JS DOM manipulation.
+        - Decision Tree: An expert-driven interactive guide for selecting the correct test type, with breadcrumbs for tracking progress. Goal: Guide & Educate. Method: JS DOM manipulation.
     -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
@@ -139,6 +139,31 @@
             font-weight: 600;
             color: #5b21b6;
         }
+        .breadcrumb {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 1rem;
+        }
+        .feedback-message {
+            margin-top: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: none;
+        }
+        .feedback-green {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+        .feedback-orange {
+            background-color: #ffedd5;
+            color: #9a3412;
+        }
+        .feedback-red {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -168,6 +193,7 @@
 
     <script>
         let formData = { 'nombreProduits': 1, 'panelSize': 1, 'produitsParSujet': 1 };
+        let treeHistory = [];
 
         const protocolData = {
             sections: [
@@ -177,12 +203,9 @@
                     icon: `<svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`,
                     content: `
                         <div class="bg-white p-6 rounded-lg shadow-sm">
-                           <h2 class="text-2xl font-bold mb-4 text-violet-700">Bienvenue dans le Générateur de Protocoles Sensoriels</h2>
-                            <p class="mb-4">Cet outil est conçu pour vous aider à rédiger des protocoles de tests sensoriels complets et standardisés. Remplissez les champs dans chaque section pour construire votre protocole pas à pas.</p>
-                             <div class="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
-                                <h3 class="font-semibold text-green-800">Exportation PDF</h3>
-                                <p class="text-sm text-green-700 mt-2">Une fois que vous avez rempli toutes les sections, cliquez sur le bouton "Exporter en PDF" dans le menu de gauche pour générer un document professionnel de votre protocole.</p>
-                            </div>
+                           <h2 class="text-2xl font-bold mb-4 text-violet-700">Bienvenue dans l’aide à la rédaction de Protocoles de tests terrain.</h2>
+                            <p class="mb-4">Cet outil est conçu pour vous aider à rédiger des protocoles de tests terrain complets et standardisés. Remplissez les champs dans chaque section pour construire votre protocole pas à pas.</p>
+                            <p>Vous pouvez ouvrir et fermer les sections en cliquant sur leur titre.</p>
                         </div>
                     `
                 },
@@ -191,12 +214,12 @@
                     title: '1. Identification & Contexte',
                     icon: `<svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002-2h2a2 2 0 002 2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>`,
                     items: [
-                        { inputId: 'titre', title: '1. Titre du Protocole', explanation: 'Le titre est la première porte d\'entrée du document. Il doit être concis, tout en étant suffisamment clair et informatif pour permettre une identification rapide de l\'objet principal du test sensoriel.', example: 'Protocole de Test Sensoriel – Évaluation Hédonique Comparative de Trois Nouvelles Formulations de Boisson Énergisante', type: 'text' },
-                        { inputId: 'identifiant', title: '2. Identifiant Unique', explanation: 'L\'attribution d\'un code unique à chaque protocole est une pratique indispensable pour assurer une traçabilité sans faille.', example: 'AS-PROT-2024-06-BE-005', type: 'text' },
-                        { inputId: 'version', title: '3. Version et Date', explanation: 'Les protocoles peuvent évoluer. Indiquer un numéro de version clair (ex: 1.0, 1.1) et la date de la dernière mise à jour est essentiel pour s\'assurer que la dernière version approuvée est utilisée.', example: 'Version 1.1 – 15/07/2024', type: 'text' },
-                        { inputId: 'responsable', title: '4. Responsable de l\'Étude', explanation: 'Il est crucial d\'identifier nommément la personne qui porte la responsabilité principale de l\'étude.', example: 'Dr. Léa Martin (PhD, Responsable du Laboratoire d\'Analyse Sensorielle)', type: 'text' },
-                        { inputId: 'contexte', title: '5. Contexte et Justification', explanation: 'Cette section doit expliquer de manière concise mais claire les raisons pour lesquelles le test sensoriel est entrepris.', example: 'Assurer que la réduction de 15% de sucre dans notre gamme de céréales n\'entraîne pas une baisse significative de l\'appréciation globale du produit par les enfants, notre cible principale.', type: 'textarea' },
-                        { inputId: 'objectifs', title: '6. Objectifs Spécifiques', explanation: 'Les objectifs décrivent de manière précise ce que le test doit déterminer.', example: 'Déterminer s\'il existe une différence sensorielle globale perceptible par les consommateurs entre la formulation actuelle (A) et une nouvelle (B).', type: 'textarea' }
+                        { inputId: 'titre', title: '1. Titre du Protocole', explanation: 'Le titre est la première porte d\'entrée du document. Il doit être concis, tout en étant suffisamment clair et informatif pour permettre une identification rapide de l\'objet principal du test. Un bon titre facilite l\'organisation des études, leur archivage et leur recherche ultérieure.', example: 'Évaluation Hédonique Comparative de Trois Nouvelles Formulations de Boisson Énergisante', type: 'text' },
+                        { inputId: 'identifiant', title: '2. Identifiant Unique', explanation: 'L\'attribution d\'un code unique à chaque protocole est une pratique indispensable pour assurer une traçabilité sans faille. Cet identifiant sert de lien entre le protocole, le rapport d\'analyse, les échantillons testés, les données brutes collectées et tout autre document relatif à l\'étude. Il prévient toute confusion. "[Numéro de laboratoire/Nom d’équipe/sport]-[AA]-[Numéro du test]”', example: 'L178-25-051', type: 'text' },
+                        { inputId: 'responsable', title: '3. Responsable de l\'Étude', explanation: 'Il est crucial d\'identifier nommément la personne qui porte la responsabilité principale de l\'étude (conception, supervision, analyse, rapport). Cette identification clarifie les rôles et les responsabilités.', example: 'Lucas Blondel (Ingénieur Essais Terrain, NEC+)', type: 'text' },
+                        { inputId: 'contexte', title: '4. Contexte et Justification', explanation: 'Cette section doit expliquer de manière concise mais claire les raisons pour lesquelles le test sensoriel est entrepris. Quel est le problème spécifique que l\'on cherche à résoudre? Quelle est la question précise à laquelle l\'étude doit apporter une réponse?', example: 'Assurer que la réduction de 8% de l’épaisseur de la semelle de la chaussure de basket n’engendre pas de diminution de la perception de l’amorti.', type: 'textarea' },
+                        { inputId: 'problematiques', title: '5. Problématique(s) du test', explanation: 'Les objectifs spécifiques décrivent de manière précise et mesurable ce que l\'on cherche à déterminer grâce au test. Ils découlent directement du contexte et sont déterminants pour le choix de la méthodologie.', example: 'Déterminer si la chaussure avec une épaisseur de semelle de 12 mm (Produit A) est au moins autant appréciée que la chaussure référente à 13 mm d’épaisseur, concernant la sensation d’amorti (Produit B).', type: 'textarea' },
+                        { inputId: 'resultatsAttendus', title: '6. Résultats attendus', explanation: 'Formuler une problématique SMART (Ex : Évaluer la compatibilité du vélo avec un référent du marché / Évaluer le confort d’accueil d’une selle / etc).', example: 'La chaussure A est au moins autant appréciée que la chaussure B;', type: 'textarea' }
                     ]
                 },
                  {
@@ -206,14 +229,14 @@
                     items: [
                         { 
                             id: 'testTypeTree',
-                            title: '7. Type de Test', 
-                            explanation: 'Utilisez cet arbre de décision pour sélectionner le type de test le plus adapté à vos objectifs.', 
-                            example: 'Test Sensoriel > Affectif > Échelle Hédonique', 
+                            title: '1. Type de Test', 
+                            explanation: 'Indiquer clairement le type de test (Sensoriel, instrumental etc…)) et justifier ce choix en expliquant son adéquation avec les objectifs spécifiques. Chaque catégorie de test est conçue pour répondre à des questions distinctes.', 
+                            example: '', 
                             type: 'interactive-tree'
                         },
                         { 
                             inputId: 'nombreProduits', 
-                            title: '7.1 Nombre de produits', 
+                            title: '2. Nombre de produits', 
                             explanation: 'Indiquez le nombre total de produits qui seront évalués au cours de cette étude.', 
                             example: '3', 
                             type: 'select', 
@@ -221,17 +244,17 @@
                         },
                         { 
                             id: 'dynamicProductContainer',
-                            title: '8. Description du/des Produit(s)', 
-                            explanation: 'Fournir une description exhaustive de chaque produit pour la traçabilité et pour utiliser les générateurs ci-dessous.', 
-                            example: 'Produit A: Biscuit \'Croq\'Choc\'...',
+                            title: '3. Description du/des Produit(s)', 
+                            explanation: 'Fournir une description exhaustive de chaque produit pour une traçabilité parfaite (marque, nom, version).', 
+                            example: 'Gant de gardien 900, Kipsta, Prototype, version 3.2',
                             type: 'dynamic' 
                         },
-                        { inputId: 'preparation', title: '9. Préparation des Échantillons', explanation: 'Détailler toutes les étapes de préparation (température, quantité, récipient) pour assurer l\'homogénéité et neutraliser les biais.', example: '100mL de soupe servis à 65°C dans des bols en céramique blanche.', type: 'textarea' },
+                        { inputId: 'preparation', title: '4. Préparation et Présentation des Échantillons', explanation: 'Détailler toutes les étapes de préparation et de présentation (codage aléatoire à 3 chiffres, ordre contrebalancé) pour assurer l\'homogénéité et neutraliser les biais.', example: '', type: 'textarea' },
                         { 
                             interactive: true,
                             id: 'generatorCodage', 
-                            title: '9.1 Codage des Échantillons', 
-                            explanation: 'Le codage vise à prévenir tout biais de jugement. Utilisez ce générateur pour créer des codes aléatoires à 3 chiffres pour chaque produit décrit dans la section 8.',
+                            title: '4.1 Codage des Échantillons', 
+                            explanation: 'Le codage vise à prévenir tout biais de jugement. Utilisez ce générateur pour créer des codes aléatoires à 3 chiffres pour chaque produit décrit dans la section 3.',
                             content: `
                                 <div class="flex flex-col items-center">
                                     <button id="code-generator-button" class="generator-button">Générer les Codes</button>
@@ -244,39 +267,39 @@
                 },
                 {
                     id: 'panel',
-                    title: '3. Panel de Dégustateurs',
+                    title: '3. Panel de testeurs',
                     icon: `<svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>`,
                     items: [
-                        { inputId: 'panelType', title: '10.1 Type de Panel', explanation: 'Décrire le type de panel (experts, entraînés, consommateurs) en lien avec les objectifs.', example: 'Panel de consommateurs réguliers de sodas.', type: 'text' },
-                        { inputId: 'recrutement', title: '10.2 Critères de Recrutement', explanation: 'Lister les critères de sélection. L\'IA peut suggérer des critères pertinents basés sur les objectifs et le type de panel.', example: 'Femmes/Hommes, 30-55 ans, consommant des yaourts aux fruits >= 2 fois/semaine, non allergiques au lait.', type: 'textarea' },
+                        { inputId: 'panelType', title: '1. Type de Panel', explanation: 'Décrire le type de panel (experts, consommateurs) en lien avec les objectifs. Un panel d\'experts pour la finesse descriptive, un panel de consommateurs pour l\'appréciation.', example: 'Panel de 60 utilisateurs de genouillères pour un test de préférence.', type: 'text' },
+                        { inputId: 'recrutement', title: '2. Critères de Recrutement', explanation: 'Lister les critères de sélection (démographiques, morphologiques, habitudes d’utilisation/de consommation/). Un recrutement rigoureux est une condition de base pour la validité des résultats. Il est important de tout détailler est d’avoir un profil précis établi avec le Product Manager.', example: 'Femmes/Hommes, 30-55 ans, utilisateur de genouillères 2 à 3 fois par semaine, en moyenne durant la pratique sportive, depuis plus de 1 an et n’ayant pas eu de blessures au genoux sur la dernière année.', type: 'textarea' },
                         { 
                             inputId: 'panelSize', 
-                            title: '10.3 Nombre de Sujets', 
-                            explanation: 'Indiquer le nombre total de sujets qui participeront au test.', 
+                            title: '3. Nombre de Sujets', 
+                            explanation: 'Indiquer et justifier la taille du panel. Elle dépend du type de test, de la variabilité attendue et de la puissance statistique souhaitée.', 
                             example: '30', 
                             type: 'select',
                             options: Array.from({length: 100}, (_, i) => i + 1)
                         },
                         { 
                             inputId: 'produitsParSujet', 
-                            title: '10.4 Produits testés par sujet', 
+                            title: '4. Produits testés par sujet', 
                             explanation: 'Indiquer combien de produits chaque sujet évaluera. Si ce nombre est inférieur au total, un plan en blocs incomplets sera généré.', 
                             example: '3', 
                             type: 'select',
                             options: [] // Will be populated dynamically
                         },
-                        { inputId: 'formation', title: '10.5 Formation (si applicable)', explanation: 'Pour les panels entraînés, décrire le programme de formation.', example: 'Formation de 60h sur la texture des produits de panification.', type: 'textarea' },
-                        { inputId: 'consignes', title: '10.6 Consignes Avant le Test', explanation: 'Lister les instructions données aux sujets pour minimiser les interférences sensorielles.', example: 'Ne pas fumer 2h avant la séance, ne pas utiliser de parfum le jour du test, venir à jeun depuis au moins 1h.', type: 'textarea' },
+                        { inputId: 'formation', title: '5. Formation (si applicable)', explanation: 'Pour les panels entraînés, décrire le programme de formation (durée, méthodes, calibration sur les échelles et descripteurs).', example: 'Formation de 60h sur la texture des produits de panification, avec définition de références pour l\'intensité.', type: 'textarea' },
+                        { inputId: 'consignes', title: '6. Consignes Avant le Test', explanation: 'Lister les instructions données aux sujets avant la séance pour minimiser les interférences sensorielles.', example: 'Ne pas fumer 2h avant la séance, ne pas utiliser de parfum le jour du test, venir à jeun depuis au moins 1h.', type: 'textarea' },
                         { 
                             interactive: true, 
                             id: 'generatorOrdre',
-                            title: '10.7 Ordre de Présentation', 
+                            title: '7. Ordre de Présentation', 
                             explanation: 'Pour neutraliser les effets de rang, l\'ordre de présentation doit être contrebalancé. Utilisez ce générateur pour créer un plan adapté au nombre de produits et de sujets.',
                             content: `
                                 <div class="flex flex-col items-center">
                                     <button id="latin-square-button" class="generator-button">Générer le Plan de Présentation</button>
                                     <div id="latin-square-result" class="mt-4 p-4 w-full bg-gray-50 rounded-md border border-gray-200 min-h-[50px] overflow-x-auto">
-                                        <p class="text-sm text-gray-500">Le plan de présentation s'affichera ici.</p>
+                                        <p class="text-sm text-gray-500">Le plan de présentation s'afficheront ici.</p>
                                     </div>
                                 </div>`
                         }
@@ -287,8 +310,9 @@
                     title: '4. Environnement & Déroulement',
                     icon: `<svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>`,
                     items: [
-                        { inputId: 'conditions', title: '11. Conditions de Test', explanation: 'Décrire le local de test (idéalement conforme ISO 8589) et le matériel fourni.', example: 'Cabines de dégustation individuelles, éclairage lumière du jour contrôlé, température de 21°C.', type: 'textarea' },
-                        { inputId: 'deroulement', title: '12. Déroulement de la Séance', explanation: 'Rédiger les instructions claires et standardisées données aux sujets, et décrire la fiche d\'évaluation.', example: 'Instructions pour un test triangulaire lues au début de la séance, puis réponses collectées sur tablette.', type: 'textarea' }
+                        { inputId: 'conditions', title: '1. Conditions de Test', explanation: 'Décrire l’endroit où le test aura lieu.', example: 'Terrain d’athlétisme.', type: 'textarea' },
+                        { inputId: 'deroulement', title: '2. Déroulement de la Séance', explanation: 'Rédiger les instructions claires et standardisées données aux sujets, et décrire la fiche d\'évaluation (papier ou digitale) utilisée pour la collecte des réponses.', example: 'Instructions pour un test triangulaire lues au début de la séance, puis réponses collectées sur tablette via le logiciel FIZZ.', type: 'textarea' },
+                        { inputId: 'materiel', title: '3. Matériel', explanation: 'Lister tout le matériel dont on aura besoin pour réaliser le test.', example: '- 10 modèles de la chaussure produit A en taille 43.\n- 10 modèles de la chaussure produit B en taille 43\n- 20 paires de chaussette (mettre le modèle de la chaussette)\n- 2 caméras sur pied\n- une tablette/ordi\n- 10 plots …', type: 'textarea' }
                     ]
                 },
                 {
@@ -296,21 +320,18 @@
                     title: '5. Évaluation & Analyse',
                     icon: `<svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>`,
                     items: [
-                        { inputId: 'echelles', title: '13. Descripteurs et Échelles de Mesure', explanation: 'Lister les attributs à évaluer et le type d\'échelle de mesure utilisée.', example: 'Appréciation globale évaluée sur une échelle hédonique à 9 points. Intensité de l\'amertume sur une échelle linéaire de 0 à 10.', type: 'textarea' },
-                        { inputId: 'collecte', title: '14. Collecte et Enregistrement', explanation: 'Décrire comment les données sont collectées, enregistrées et vérifiées pour assurer leur intégrité.', example: 'Collecte sur tablette via FIZZ, export automatique des données en .csv.', type: 'text' },
-                        { inputId: 'statistiques', title: '15. Analyse Statistique', explanation: 'Spécifier les méthodes statistiques utilisées.', example: 'ANOVA sur les notes hédoniques pour tester l\'effet produit, suivie de tests post-hoc de Tukey si p < 0.05.', type: 'textarea' },
-                        { inputId: 'interpretation', title: '16. Critères d\'Interprétation des Résultats', explanation: 'Définir en amont comment les résultats seront interprétés. Une différence statistiquement significative est-elle commercialement pertinente ?', example: 'Une différence de note hédonique supérieure à 1 point sera considérée comme commercialement pertinente.', type: 'text' }
+                        { inputId: 'echelles', title: '1. Descripteurs et Échelles de Mesure', explanation: 'Lister les attributs à évaluer et le type d\'échelle de mesure utilisée (ex: échelle hédonique à 9 points, échelle d\'intensité linéaire, échelle JAR). Le choix de l\'échelle est critique et dépend de la question posée.', example: 'Appréciation globale évaluée sur une échelle hédonique à 9 points. Intensité de l\'amertume sur une échelle JAR de 1 à 7.', type: 'textarea' },
+                        { inputId: 'collecte', title: '2. Collecte et Enregistrement', explanation: 'Décrire comment les données sont collectées (papier, digital), enregistrées (logiciel, format) et vérifiées pour assurer leur intégrité. La traçabilité doit être parfaite.', example: 'Collecte sur tablette via google form.', type: 'text' },
+                        { inputId: 'statistiques', title: '3. Analyse Statistique', explanation: 'Spécifier les méthodes statistiques utilisées (ex: ANOVA, Chi-deux, ACP) en adéquation avec le type de données et les objectifs. Le seuil de significativité retenu (généralement 5%) doit être mentionné.', example: 'ANOVA sur les notes hédoniques pour tester l\'effet produit, suivie de tests post-hoc de Tukey si p < 0.05.', type: 'textarea' },
+                        { inputId: 'interpretation', title: '4. Critères d\'Interprétation des Résultats', explanation: 'Définir en amont comment les résultats seront interprétés. Une différence statistiquement significative est-elle pour autant commercialement pertinente ?', example: 'Une différence de note hédonique supérieure à 1 point sera considérée comme commercialement pertinente.', type: 'text' }
                     ]
                 },
                 {
-                    id: 'rapport',
-                    title: '6. Rapport & Annexes',
+                    id: 'annexes',
+                    title: '6. Annexes',
                     icon: `<svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>`,
                     items: [
-                        { inputId: 'contenuRapport', title: '17. Contenu du Rapport', explanation: 'Définir la structure type du rapport final (Résumé, Intro, Méthodes, Résultats, Discussion, Conclusion).', example: 'Rapport structuré avec un résumé exécutif d\'une page destiné aux décideurs.', type: 'textarea' },
-                        { inputId: 'ethique', title: '18. Confidentialité & Éthique', explanation: 'Mentionner les dispositions pour la confidentialité des résultats, l\'anonymat et le consentement éclairé des panélistes.', example: 'Signature d\'un formulaire de consentement éclairé avant participation. Données traitées de manière anonyme.', type: 'text' },
-                        { inputId: 'references', title: '19. Références', explanation: 'Lister les normes (ISO, AFNOR) et les ouvrages scientifiques de référence utilisés pour élaborer le protocole.', example: 'NF EN ISO 8589: Conception des locaux d\'essais.', type: 'textarea' },
-                        { inputId: 'annexes', title: '20. Annexes', explanation: 'Lister les documents joints au protocole (modèles de fiches, questionnaires, plans détaillés).', example: 'Annexe 1: Modèle du formulaire de consentement.', type: 'textarea' }
+                        { inputId: 'annexes', title: 'Annexes', explanation: 'Lister les documents joints au protocole (modèles de fiches, questionnaires, plans détaillés) pour le rendre pleinement opérationnel et reproductible.', example: 'Annexe 1: Modèle du formulaire de consentement. Annexe 2: Modèle de la fiche d\'évaluation.', type: 'textarea' }
                     ]
                 }
             ]
@@ -455,6 +476,7 @@
                             <div class="mt-4">
                                 <label for="${item.inputId}" class="font-semibold text-gray-700">Votre saisie :</label>
                                 ${inputElementHtml}
+                                <div id="${item.inputId}-feedback" class="feedback-message"></div>
                             </div>
                         </div>
                     </div>
@@ -634,6 +656,36 @@
             formData['produitsParSujet'] = select.value;
         }
 
+        function updatePanelSizeFeedback() {
+            const feedbackDiv = document.getElementById('panelSize-feedback');
+            if (!feedbackDiv) return;
+
+            const testType = formData['testType'] || '';
+            const panelSize = parseInt(formData['panelSize'] || 0, 10);
+            let message = '';
+            let colorClass = '';
+
+            if (testType.includes('Triangulaire') || testType.includes('Duo-Trio')) {
+                if (panelSize < 24) { message = 'Insuffisant. Un minimum de 24 sujets est recommandé pour une bonne puissance statistique.'; colorClass = 'feedback-red'; }
+                else if (panelSize <= 30) { message = 'Acceptable. Pour plus de robustesse, visez plus de 30 sujets.'; colorClass = 'feedback-orange'; }
+                else { message = 'Optimal. Ce nombre de sujets est excellent pour ce type de test.'; colorClass = 'feedback-green'; }
+            } else if (testType.includes('Descriptive') || testType.includes('Profil')) {
+                if (panelSize < 8) { message = 'Insuffisant. Un panel entraîné requiert au moins 8 sujets.'; colorClass = 'feedback-red'; }
+                else if (panelSize > 15) { message = 'Élevé. Assurez-vous de pouvoir maintenir l\'homogénéité du panel.'; colorClass = 'feedback-orange'; }
+                else { message = 'Optimal. La taille du panel est idéale pour un test descriptif.'; colorClass = 'feedback-green'; }
+            } else if (testType.includes('Hédonique') || testType.includes('Préférence') || testType.includes('JAR')) {
+                if (panelSize < 60) { message = 'Très insuffisant pour un test consommateur. Visez au moins 60-80 sujets.'; colorClass = 'feedback-red'; }
+                else if (panelSize < 80) { message = 'Acceptable pour des tendances, mais 80+ est recommandé pour des résultats fiables.'; colorClass = 'feedback-orange'; }
+                else { message = 'Optimal. Ce nombre de consommateurs est robuste pour un test affectif.'; colorClass = 'feedback-green'; }
+            } else {
+                message = '';
+            }
+
+            feedbackDiv.textContent = message;
+            feedbackDiv.className = `feedback-message ${colorClass}`;
+            feedbackDiv.style.display = message ? 'block' : 'none';
+        }
+
         function renderSection(section) {
             const container = document.getElementById('content-container');
             if (section.id === 'introduction') {
@@ -673,6 +725,9 @@
                                     updateProduitsParSujetOptions();
                                     updateProductInputs();
                                 }
+                                if (item.inputId === 'panelSize') {
+                                    updatePanelSizeFeedback();
+                                }
                             });
                         }
                     }
@@ -689,6 +744,10 @@
 
             if(document.getElementById('decision-tree-container')) {
                 setupDecisionTree();
+            }
+
+            if (document.getElementById('panelSize')) {
+                updatePanelSizeFeedback();
             }
 
             const codeGenButton = document.getElementById('code-generator-button');
@@ -772,6 +831,8 @@
                                 value = formData['generatedCodesText'] || "Non généré";
                             } else if (item.interactive && item.title.includes('Ordre')) {
                                 value = formData['latinSquareText'] || "Non généré";
+                            } else if (item.type === 'interactive-tree') {
+                                value = formData['testType'] || "Non sélectionné";
                             }
 
                             doc.setFont('helvetica', 'normal');
@@ -830,6 +891,171 @@
             });
         }
         
+        function setupDecisionTree() {
+            const container = document.getElementById('decision-tree-container');
+            if (!container) return;
+
+            const tree = {
+                start: {
+                    question: "Quel type de mesure souhaitez-vous réaliser ?",
+                    options: [
+                        { text: "Test Sensoriel (avec des sujets humains)", next: 'sensoriel_objectif' },
+                        { text: "Test Instrumenté (mesure physique)", next: 'instrumental' },
+                        { text: "Autre type de test", final: 'Autre (à préciser)' }
+                    ]
+                },
+                instrumental: {
+                    question: "Quelle propriété principale souhaitez-vous mesurer ?",
+                    options: [
+                        { text: "Texture (dureté, élasticité, etc.)", final: 'Analyse de Texture (Texturomètre)' },
+                        { text: "Couleur", final: 'Colorimétrie (Colorimètre)' },
+                        { text: "Arômes (composés volatils)", final: 'Analyse Chromatographique (CPG-MS)' },
+                        { text: "Goût (sucré, acidité...)", final: 'Analyse Physico-chimique (pH-mètre, Réfractomètre...)' }
+                    ]
+                },
+                sensoriel_objectif: {
+                    question: "Quel est l'objectif principal de votre test sensoriel ?",
+                    options: [
+                        { text: "Comparer des produits (y a-t-il une différence ?)", next: 'discriminatif' },
+                        { text: "Décrire des produits (quelles sont leurs caractéristiques ?)", next: 'descriptif' },
+                        { text: "Mesurer l'appréciation (les produits sont-ils aimés ?)", next: 'affectif' }
+                    ]
+                },
+                discriminatif: {
+                    question: "La question est-elle simplement 'différent ou pas' ou 'lequel est le plus intense/préféré' ?",
+                    options: [
+                        { text: "Différent ou pas (global)", next: 'discriminatif_global' },
+                        { text: "Plus intense / Préféré", final: 'Comparaison par Paires' }
+                    ]
+                },
+                discriminatif_global: {
+                    question: "Comment voulez-vous présenter les échantillons ?",
+                    options: [
+                        { text: "3 échantillons (2 identiques, 1 différent)", final: 'Test Triangulaire' },
+                        { text: "1 référence + 2 échantillons", final: 'Test Duo-Trio' }
+                    ]
+                },
+                descriptif: {
+                    question: "Avez-vous besoin d'un profil complet et quantifié ou d'une description plus rapide ?",
+                    options: [
+                        { text: "Profil complet et quantifié", next: 'descriptif_complet' },
+                        { text: "Description rapide/comparative", final: 'Profil Flash' }
+                    ]
+                },
+                descriptif_complet: {
+                    question: "Quelle méthode descriptive souhaitez-vous utiliser ?",
+                    options: [
+                        { text: "Profil Sensoriel Conventionnel", final: 'Profil Sensoriel Conventionnel' },
+                        { text: "Analyse Descriptive Quantitative (QDA®)", final: 'Analyse Descriptive Quantitative (QDA®)' }
+                    ]
+                },
+                affectif: {
+                    question: "Voulez-vous mesurer le niveau de plaisir, classer par préférence, ou optimiser un attribut ?",
+                    options: [
+                        { text: "Niveau de plaisir", final: 'Échelle Hédonique' },
+                        { text: "Classer par préférence", final: 'Classement par Préférence' },
+                        { text: "Optimiser un attribut", final: 'Échelles JAR (Just About Right)' }
+                    ]
+                }
+            };
+
+            function renderNode(nodeKey) {
+                const node = tree[nodeKey];
+                container.innerHTML = '';
+
+                const breadcrumb = document.createElement('div');
+                breadcrumb.className = 'breadcrumb';
+                let path = 'Accueil';
+                treeHistory.forEach(step => {
+                    path += ` > ${step.text}`;
+                });
+                breadcrumb.textContent = path;
+                container.appendChild(breadcrumb);
+
+                const question = document.createElement('p');
+                question.className = 'font-semibold mb-3';
+                question.textContent = node.question;
+                container.appendChild(question);
+
+                const optionsContainer = document.createElement('div');
+                container.appendChild(optionsContainer);
+                
+                node.options.forEach(option => {
+                    const button = document.createElement('button');
+                    button.className = 'tree-node';
+                    button.textContent = option.text;
+                    button.onclick = () => {
+                        treeHistory.push({ key: option.next || option.final, text: option.text });
+                        if (option.next) {
+                            renderNode(option.next);
+                        } else if (option.final) {
+                            selectFinal(option.final);
+                        }
+                    };
+                    optionsContainer.appendChild(button);
+                });
+
+                if (treeHistory.length > 0) {
+                    const backButton = document.createElement('button');
+                    backButton.textContent = 'Précédent';
+                    backButton.className = 'text-sm text-blue-600 hover:underline mt-4';
+                    backButton.onclick = () => {
+                        treeHistory.pop();
+                        const previousNodeKey = treeHistory.length > 0 ? treeHistory[treeHistory.length - 1].key : 'start';
+                        treeHistory.pop(); // Pop again to remove the step we are going back to, it will be re-added
+                        renderNode(previousNodeKey);
+                    };
+                    container.appendChild(backButton);
+                }
+            }
+
+            function selectFinal(testType) {
+                formData['testType'] = testType;
+                updatePanelSizeFeedback();
+                let breadcrumbHtml = '<div class="breadcrumb">Votre chemin : ';
+                treeHistory.forEach((step, index) => {
+                    breadcrumbHtml += `${step.text}${index < treeHistory.length - 1 ? ' > ' : ''}`;
+                });
+                breadcrumbHtml += '</div>';
+
+                let resultHtml = `${breadcrumbHtml}<p class="font-semibold">Test sélectionné :</p>
+                                  <div class="p-3 mt-2 bg-green-100 border border-green-300 rounded-lg text-green-800 font-bold">
+                                    ${testType}
+                                  </div>`;
+                if (testType.includes('Autre')) {
+                    resultHtml += `<div id="autreTestTypeContainer" class="mt-4">
+                                <label for="autreTestType" class="font-semibold text-gray-700">Précisez le type de test :</label>
+                                <input type="text" id="autreTestType" class="form-input mt-1" value="${formData['autreTestType'] || ''}">
+                            </div>`;
+                }
+                resultHtml += `<button id="reset-tree" class="text-sm text-blue-600 hover:underline mt-4">Recommencer la sélection</button>`;
+                container.innerHTML = resultHtml;
+                
+                document.getElementById('reset-tree').onclick = () => {
+                    delete formData.testType;
+                    delete formData.autreTestType;
+                    treeHistory = [];
+                    updatePanelSizeFeedback();
+                    renderNode('start');
+                };
+                
+                const autreInput = document.getElementById('autreTestType');
+                if (autreInput) {
+                    autreInput.addEventListener('input', (e) => {
+                        formData['autreTestType'] = e.target.value;
+                        formData['testType'] = e.target.value; // Also update the main field
+                    });
+                }
+            }
+            
+            if (formData['testType']) {
+                selectFinal(formData['testType']);
+            } else {
+                treeHistory = [];
+                renderNode('start');
+            }
+        }
+
         function init() {
             buildNav();
             handleNavigation();
@@ -841,3 +1067,5 @@
     </script>
 </body>
 </html>
+
+
