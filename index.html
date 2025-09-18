@@ -9,15 +9,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Chosen Palette: Warm Neutrals -->
-    <!-- Application Structure Plan: An interactive dashboard-style single-page application. A persistent left-hand navigation sidebar allows users to select one of the 6 main sections of the protocol. The main content area dynamically displays the details of the selected section. This structure breaks down the dense report into manageable, task-oriented chunks, facilitating non-linear exploration and learning. This design prioritizes user understanding and ease of reference. -->
-    <!-- Visualization & Content Choices: 
-        - General Structure: Content is organized into expandable accordion cards for each of the 20 points, allowing users to fill in data. Goal: Organize & Collect Data. Method: HTML/CSS/JS.
-        - PDF Export: A core feature to generate a document from the user-entered data. Goal: Output. Method: jsPDF library.
-        - Interactive Generators: Buttons for generating random codes and Latin Squares/BIBD to assist in protocol creation. Goal: Automate & Assist. Method: JS DOM manipulation.
-        - Decision Tree: An expert-driven interactive guide for selecting the correct test type, with breadcrumbs for tracking progress. Goal: Guide & Educate. Method: JS DOM manipulation.
-    -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -110,15 +101,15 @@
             z-index: 9999;
         }
         .generator-button {
-             background-color: #8b5cf6;
-             color: white;
-             font-weight: 500;
-             padding: 0.5rem 1rem;
-             border-radius: 0.375rem;
-             transition: background-color 0.2s;
+            background-color: #8b5cf6;
+            color: white;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            transition: background-color 0.2s;
         }
         .generator-button:hover {
-             background-color: #7c3aed;
+            background-color: #7c3aed;
         }
         .tree-node {
             padding: 0.75rem;
@@ -128,6 +119,8 @@
             margin-bottom: 0.5rem;
             cursor: pointer;
             transition: all 0.2s ease-in-out;
+            width: 100%;
+            text-align: left;
         }
         .tree-node:hover {
             border-color: #a78bfa;
@@ -203,9 +196,9 @@
                     icon: `<svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`,
                     content: `
                         <div class="bg-white p-6 rounded-lg shadow-sm">
-                           <h2 class="text-2xl font-bold mb-4 text-violet-700">Bienvenue dans l’aide à la rédaction de Protocoles de tests terrain.</h2>
-                            <p class="mb-4">Cet outil est conçu pour vous aider à rédiger des protocoles de tests terrain complets et standardisés. Remplissez les champs dans chaque section pour construire votre protocole pas à pas.</p>
-                            <p>Vous pouvez ouvrir et fermer les sections en cliquant sur leur titre.</p>
+                            <h2 class="text-2xl font-bold mb-4 text-violet-700">Bienvenue dans l’aide à la rédaction de Protocoles de tests terrain.</h2>
+                             <p class="mb-4">Cet outil est conçu pour vous aider à rédiger des protocoles de tests terrain complets et standardisés. Remplissez les champs dans chaque section pour construire votre protocole pas à pas.</p>
+                             <p>Vous pouvez ouvrir et fermer les sections en cliquant sur leur titre.</p>
                         </div>
                     `
                 },
@@ -218,8 +211,8 @@
                         { inputId: 'identifiant', title: '2. Identifiant Unique', explanation: 'L\'attribution d\'un code unique à chaque protocole est une pratique indispensable pour assurer une traçabilité sans faille. Cet identifiant sert de lien entre le protocole, le rapport d\'analyse, les échantillons testés, les données brutes collectées et tout autre document relatif à l\'étude. Il prévient toute confusion. "[Numéro de laboratoire/Nom d’équipe/sport]-[AA]-[Numéro du test]”', example: 'L178-25-051', type: 'text' },
                         { inputId: 'responsable', title: '3. Responsable de l\'Étude', explanation: 'Il est crucial d\'identifier nommément la personne qui porte la responsabilité principale de l\'étude (conception, supervision, analyse, rapport). Cette identification clarifie les rôles et les responsabilités.', example: 'Lucas Blondel (Ingénieur Essais Terrain, NEC+)', type: 'text' },
                         { inputId: 'contexte', title: '4. Contexte et Justification', explanation: 'Cette section doit expliquer de manière concise mais claire les raisons pour lesquelles le test sensoriel est entrepris. Quel est le problème spécifique que l\'on cherche à résoudre?', example: 'Assurer que la réduction de 8% de l’épaisseur de la semelle de la chaussure de basket n’engendre pas de diminution de la perception de l’amorti.', type: 'textarea' },
-                        { inputId: 'problematique', title: '5. Problématique', explanation: 'Quelle est la question présice à laque l\'étude doit apporter une réponse ? Formuler une problématique SMART', example: 'Déterminer si la chaussure avec une épaisseur de semelle de 12 mm (Produit A) est au moins autant appréciée que la chaussure référente à 13 mm d’épaisseur, concernant la sensation d’amorti (Produit B).', type: 'textarea' },
-                        { inputId: 'resultatsAttendus', title: '6. Résultats attendus', explanation: '"Mon test sera validé si...". "Je serai satisfait si...". Formuler l'hypothèse nulle et l'hypothèse alternative; le seuil d'acceptation; les résultats attendus', example: 'La chaussure A est au moins autant appréciée que la chaussure B;', type: 'textarea' }
+                        { inputId: 'problematique', title: '5. Problématique', explanation: 'Quelle est la question précise à laquelle l\'étude doit apporter une réponse ? Formuler une problématique SMART', example: 'Déterminer si la chaussure avec une épaisseur de semelle de 12 mm (Produit A) est au moins autant appréciée que la chaussure référente à 13 mm d’épaisseur, concernant la sensation d’amorti (Produit B).', type: 'textarea' },
+                        { inputId: 'resultatsAttendus', title: '6. Résultats attendus', explanation: '"Mon test sera validé si...". "Je serai satisfait si...". Formuler l\'hypothèse nulle et l\'hypothèse alternative; le seuil d\'acceptation; les résultats attendus', example: 'La chaussure A est au moins autant appréciée que la chaussure B;', type: 'textarea' }
                     ]
                 },
                  {
@@ -230,7 +223,8 @@
                         { 
                             id: 'testTypeTree',
                             title: '1. Type de Test', 
-                            explanation: 'Indiquer clairement le type de test (Sensoriel, instrumental etc…)) et justifier ce choix en expliquant son adéquation avec les objectifs spécifiques. Chaque catégorie de test est conçue pour répondre à des questions distinctes.', 
+                            explanation: 'Indiquer clairement le type de test (Sensoriel, instrumental etc…) et justifier ce choix en expliquant son adéquation avec les objectifs spécifiques. Chaque catégorie de test est conçue pour répondre à des questions distinctes.', 
+                            example: 'Test Triangulaire pour déterminer s\'il existe une différence perceptible.',
                             type: 'interactive-tree'
                         },
                         { 
@@ -248,19 +242,13 @@
                             example: 'Gant de gardien 900, Kipsta, Prototype, version 3.2',
                             type: 'dynamic' 
                         },
-                        { inputId: 'preparation', title: '4. Préparation et Présentation des Échantillons', explanation: 'Détailler toutes les étapes de préparation et de présentation (codage aléatoire à 3 chiffres, ordre contrebalancé) pour assurer l\'homogénéité et neutraliser les biais.', example: '', type: 'textarea' },
+                        { inputId: 'preparation', title: '4. Préparation et Présentation des Échantillons', explanation: 'Détailler toutes les étapes de préparation et de présentation (codage aléatoire à 3 chiffres, ordre contrebalancé) pour assurer l\'homogénéité et neutraliser les biais.', example: 'Les produits sont présentés monadiquement selon un plan en carré latin. Chaque produit est codé avec un code à 3 chiffres unique généré aléatoirement.', type: 'textarea' },
                         { 
                             interactive: true,
                             id: 'generatorCodage', 
                             title: '4.1 Codage des Échantillons', 
                             explanation: 'Le codage vise à prévenir tout biais de jugement. Utilisez ce générateur pour créer des codes aléatoires à 3 chiffres pour chaque produit décrit dans la section 3.',
-                            content: `
-                                <div class="flex flex-col items-center">
-                                    <button id="code-generator-button" class="generator-button">Générer les Codes</button>
-                                    <div id="code-generator-result" class="mt-4 p-4 w-full bg-gray-50 rounded-md border border-gray-200 min-h-[50px]">
-                                        <p class="text-sm text-gray-500">Les codes générés s'afficheront ici.</p>
-                                    </div>
-                                </div>`
+                            content: '' // Content is generated dynamically
                         }
                     ]
                 },
@@ -294,13 +282,7 @@
                             id: 'generatorOrdre',
                             title: '7. Ordre de Présentation', 
                             explanation: 'Pour neutraliser les effets de rang, l\'ordre de présentation doit être contrebalancé. Utilisez ce générateur pour créer un plan adapté au nombre de produits et de sujets.',
-                            content: `
-                                <div class="flex flex-col items-center">
-                                    <button id="latin-square-button" class="generator-button">Générer le Plan de Présentation</button>
-                                    <div id="latin-square-result" class="mt-4 p-4 w-full bg-gray-50 rounded-md border border-gray-200 min-h-[50px] overflow-x-auto">
-                                        <p class="text-sm text-gray-500">Le plan de présentation s'afficheront ici.</p>
-                                    </div>
-                                </div>`
+                            content: '' // Content is generated dynamically
                         }
                     ]
                 },
@@ -339,37 +321,34 @@
         const toggleLoading = (isLoading, message = 'Opération en cours...') => {
             const overlay = document.getElementById('loading-overlay');
             overlay.textContent = message;
-            if (isLoading) {
-                overlay.style.display = 'flex';
-            } else {
-                overlay.style.display = 'none';
-            }
+            overlay.style.display = isLoading ? 'flex' : 'none';
         };
         
         function renderAccordions(items) {
             return items.map(item => {
+                // --- CORRECTIF : Chaque bloc `if` a maintenant son propre `return` pour éviter l'exécution du code suivant. ---
                 if (item.interactive) {
-                     const savedCodesHtml = formData['generatedCodesHtml'] || '<p class="text-sm text-gray-500">Les codes générés s\'afficheront ici.</p>';
-                     const savedLatinSquareHtml = formData['latinSquareHtml'] || '<p class="text-sm text-gray-500">Le plan de présentation s\'affichera ici.</p>';
-                     
-                     let contentHtml;
-                     if (item.id === 'generatorCodage') {
-                         contentHtml = `<div class="flex flex-col items-center">
-                                    <button id="code-generator-button" class="generator-button">Générer les Codes</button>
-                                    <div id="code-generator-result" class="mt-4 p-4 w-full bg-gray-50 rounded-md border border-gray-200 min-h-[50px]">
-                                        ${savedCodesHtml}
-                                    </div>
-                                </div>`;
-                     } else if (item.id === 'generatorOrdre') {
-                         contentHtml = `<div class="flex flex-col items-center">
-                                    <button id="latin-square-button" class="generator-button">Générer le Plan de Présentation</button>
-                                    <div id="latin-square-result" class="mt-4 p-4 w-full bg-gray-50 rounded-md border border-gray-200 min-h-[50px] overflow-x-auto">
-                                        ${savedLatinSquareHtml}
-                                    </div>
-                                </div>`;
-                     }
-                     
-                     return `
+                    const savedCodesHtml = formData['generatedCodesHtml'] || '<p class="text-sm text-gray-500">Les codes générés s\'afficheront ici.</p>';
+                    const savedLatinSquareHtml = formData['latinSquareHtml'] || '<p class="text-sm text-gray-500">Le plan de présentation s\'affichera ici.</p>';
+                    
+                    let contentHtml;
+                    if (item.id === 'generatorCodage') {
+                        contentHtml = `<div class="flex flex-col items-center">
+                                <button id="code-generator-button" class="generator-button">Générer les Codes</button>
+                                <div id="code-generator-result" class="mt-4 p-4 w-full bg-gray-50 rounded-md border border-gray-200 min-h-[50px]">
+                                    ${savedCodesHtml}
+                                </div>
+                            </div>`;
+                    } else if (item.id === 'generatorOrdre') {
+                        contentHtml = `<div class="flex flex-col items-center">
+                                <button id="latin-square-button" class="generator-button">Générer le Plan de Présentation</button>
+                                <div id="latin-square-result" class="mt-4 p-4 w-full bg-gray-50 rounded-md border border-gray-200 min-h-[50px] overflow-x-auto">
+                                    ${savedLatinSquareHtml}
+                                </div>
+                            </div>`;
+                    }
+                    
+                    return `
                         <div class="mb-2">
                             <div class="accordion-header bg-white rounded-lg shadow-sm">
                                 <h3 class="text-lg font-semibold">${item.title}</h3>
@@ -390,7 +369,7 @@
                 }
 
                 if(item.type === 'dynamic'){
-                     return `
+                    return `
                         <div class="mb-2">
                             <div class="accordion-header bg-white rounded-lg shadow-sm">
                                 <h3 class="text-lg font-semibold">${item.title}</h3>
@@ -407,14 +386,14 @@
                                         <p class="mt-1 text-sm text-gray-800 italic">"${item.example}"</p>
                                     </div>
                                     <div id="${item.id}" class="mt-4">
-                                        <!-- Dynamic product inputs will be rendered here -->
-                                    </div>
+                                        </div>
                                 </div>
                             </div>
                         </div>`;
                 }
                 
                 if (item.type === 'interactive-tree') {
+                    // --- CORRECTIF : Ajout de la section exemple qui manquait. ---
                     return `
                         <div class="mb-2">
                             <div class="accordion-header bg-white rounded-lg shadow-sm">
@@ -495,7 +474,7 @@
         function generateRandomCodes() {
             const products = getProductList();
             if (products.some(p => p.includes('(non décrit)'))) {
-                alert("Veuillez d'abord décrire tous les produits dans la section 8 avant de générer les codes.");
+                alert("Veuillez d'abord décrire tous les produits dans la section 'Description du/des Produit(s)' avant de générer les codes.");
                 return;
             };
 
@@ -527,12 +506,12 @@
         function generatePresentationPlan() {
             const products = getProductList();
             if (products.some(p => p.includes('(non décrit)'))) {
-                alert("Veuillez d'abord décrire tous les produits dans la section 8 avant de générer le plan.");
+                alert("Veuillez d'abord décrire tous les produits dans la section 'Description du/des Produit(s)' avant de générer le plan.");
                 return;
             }
 
             if (!formData['productCodes']) {
-                alert("Veuillez d'abord générer les codes pour les produits dans la section 9.1.");
+                alert("Veuillez d'abord générer les codes pour les produits dans la section 'Codage des Échantillons'.");
                 return;
             }
 
@@ -555,35 +534,29 @@
                 let firstRow = [...productCodes];
                 for (let i = 0; i < n; i++) {
                     baseSquare.push([...firstRow]);
-                    firstRow.push(firstRow.shift());
+                    firstRow.push(firstRow.shift()); // Rotate
                 }
                 for (let i = 0; i < p; i++) {
                     plan.push(baseSquare[i % n]);
                 }
             } else { // Incomplete Block Design (Cyclic)
-                let initialBlock = productCodes.slice(0, k);
+                // --- CORRECTIF : Algorithme de génération de blocs incomplets corrigé. ---
+                let currentBlock = productCodes.slice(0, k);
                 for (let i = 0; i < p; i++) {
-                    let newBlock = [];
-                    let currentBlock = plan.length > 0 ? plan[plan.length - 1] : initialBlock;
-                     if(i > 0) {
-                        currentBlock = [];
-                        const lastPlanRow = plan[i-1];
-                        for(const code of lastPlanRow) {
-                           const productIndex = productCodes.indexOf(code);
-                           currentBlock.push(productCodes[(productIndex + 1) % n]);
-                        }
-                     } else {
-                        currentBlock = initialBlock;
-                     }
-                    plan.push(currentBlock);
+                    plan.push([...currentBlock]); // Add a copy of the current block
+                    // Generate the next block by shifting indices
+                    currentBlock = currentBlock.map(code => {
+                        const productIndex = productCodes.indexOf(code);
+                        return productCodes[(productIndex + 1) % n];
+                    });
                 }
             }
 
             const resultDiv = document.getElementById('latin-square-result');
             let htmlResult = `<p class="mb-2 text-sm text-gray-600">Ordre de présentation pour chaque sujet (avec codes) :</p>
-                              <table class="w-full text-left border-collapse">
-                                <thead><tr>
-                                <th class="py-2 px-3 font-bold uppercase text-sm text-gray-600 border-b">Sujet</th>`;
+                                <table class="w-full text-left border-collapse">
+                                    <thead><tr>
+                                    <th class="py-2 px-3 font-bold uppercase text-sm text-gray-600 border-b">Sujet</th>`;
             for(let i=1; i<=k; i++) {
                 htmlResult += `<th class="py-2 px-3 font-bold uppercase text-sm text-gray-600 border-b text-center">Pos. ${i}</th>`;
             }
@@ -701,10 +674,13 @@
                 header.addEventListener('click', () => {
                     const content = header.nextElementSibling;
                     const isOpen = content.classList.contains('open');
+                    
+                    // Close all others
                     document.querySelectorAll('.accordion-content.open').forEach(openContent => {
                         openContent.classList.remove('open');
                         openContent.previousElementSibling.classList.remove('open');
                     });
+
                     if (!isOpen) {
                         content.classList.add('open');
                         header.classList.add('open');
@@ -784,6 +760,7 @@
                     
                     const protocolTitle = formData['titre'] || "Protocole Sensoriel";
                     
+                    doc.setFontSize(18);
                     doc.setFont('helvetica', 'bold');
                     const titleLines = doc.splitTextToSize(protocolTitle, usableWidth);
                     doc.text(titleLines, pageWidth / 2, y, { align: 'center' });
@@ -799,7 +776,7 @@
                         
                         doc.setFont('helvetica', 'bold');
                         doc.setFontSize(14);
-                        doc.setTextColor(93, 33, 187);
+                        doc.setTextColor(93, 33, 187); // Violet
                         doc.text(section.title, margin, y);
                         y += 8;
 
@@ -832,13 +809,16 @@
                                 value = formData['latinSquareText'] || "Non généré";
                             } else if (item.type === 'interactive-tree') {
                                 value = formData['testType'] || "Non sélectionné";
+                                if (value === 'Autre (à préciser)' && formData['autreTestType']) {
+                                    value = formData['autreTestType'];
+                                }
                             }
 
                             doc.setFont('helvetica', 'normal');
                             doc.setFontSize(10);
-                            doc.setTextColor(75, 85, 99);
+                            doc.setTextColor(75, 85, 99); // Gray
                             
-                            const valueLines = doc.splitTextToSize(value, usableWidth);
+                            const valueLines = doc.splitTextToSize(String(value), usableWidth - 5); // Indent text
                              if (y + (valueLines.length * 4.5) > pageHeight - margin) {
                                 doc.addPage();
                                 y = margin;
@@ -846,7 +826,7 @@
                             doc.text(valueLines, margin + 5, y);
                             y += valueLines.length * 4.5 + 5;
                         }
-                        y += 5;
+                        y += 5; 
                     }
                     doc.save(`${protocolTitle.replace(/ /g, '_')}.pdf`);
                 } catch (error) {
@@ -878,14 +858,14 @@
                     link.classList.add('active');
                     const sectionData = protocolData.sections.find(s => s.id === sectionId);
                     
-                    const container = document.getElementById('content-container');
-                    container.style.opacity = 0;
+                    const mainContent = document.getElementById('main-content');
+                    mainContent.style.opacity = 0;
                     setTimeout(() => {
                         renderSection(sectionData);
-                        container.style.opacity = 1;
-                        container.scrollTop = 0;
+                        mainContent.style.opacity = 1;
+                        mainContent.scrollTop = 0; // Scroll to top
                         document.querySelector('.accordion-header')?.click();
-                    }, 200);
+                    }, 150);
                 });
             });
         }
@@ -958,7 +938,7 @@
                 }
             };
 
-            function renderNode(nodeKey) {
+            function renderNode(nodeKey, isInitialRender = false) {
                 const node = tree[nodeKey];
                 container.innerHTML = '';
 
@@ -1001,7 +981,7 @@
                     backButton.onclick = () => {
                         treeHistory.pop();
                         const previousNodeKey = treeHistory.length > 0 ? treeHistory[treeHistory.length - 1].key : 'start';
-                        treeHistory.pop(); // Pop again to remove the step we are going back to, it will be re-added
+                         if (treeHistory.length > 0) treeHistory.pop(); // Pop again to set up for re-entry
                         renderNode(previousNodeKey);
                     };
                     container.appendChild(backButton);
@@ -1013,14 +993,14 @@
                 updatePanelSizeFeedback();
                 let breadcrumbHtml = '<div class="breadcrumb">Votre chemin : ';
                 treeHistory.forEach((step, index) => {
-                    breadcrumbHtml += `${step.text}${index < treeHistory.length - 1 ? ' > ' : ''}`;
+                    breadcrumbHtml += `${step.text}${index < treeHistory.length - 1 ? ' &gt; ' : ''}`;
                 });
                 breadcrumbHtml += '</div>';
 
                 let resultHtml = `${breadcrumbHtml}<p class="font-semibold">Test sélectionné :</p>
-                                  <div class="p-3 mt-2 bg-green-100 border border-green-300 rounded-lg text-green-800 font-bold">
+                                <div class="p-3 mt-2 bg-green-100 border border-green-300 rounded-lg text-green-800 font-bold">
                                     ${testType}
-                                  </div>`;
+                                </div>`;
                 if (testType.includes('Autre')) {
                     resultHtml += `<div id="autreTestTypeContainer" class="mt-4">
                                 <label for="autreTestType" class="font-semibold text-gray-700">Précisez le type de test :</label>
@@ -1042,16 +1022,21 @@
                 if (autreInput) {
                     autreInput.addEventListener('input', (e) => {
                         formData['autreTestType'] = e.target.value;
-                        formData['testType'] = e.target.value; // Also update the main field
+                        formData['testType'] = e.target.value ? `Autre (${e.target.value})` : 'Autre (à préciser)'; // Also update the main field
                     });
                 }
             }
             
             if (formData['testType']) {
+                 // Rebuild history if a choice was made
+                if (treeHistory.length === 0 && formData['testType'] !== 'Autre (à préciser)') {
+                   // This is a simplified history reconstruction. For a complex tree, a search would be needed.
+                   // For now, just show the final selection.
+                }
                 selectFinal(formData['testType']);
             } else {
                 treeHistory = [];
-                renderNode('start');
+                renderNode('start', true);
             }
         }
 
